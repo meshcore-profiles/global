@@ -6,6 +6,9 @@ Shared scripts used across every MeshCore backend project - added as a git submo
 
 - [`services/redis.js`](services/redis.js) - shared Redis client (database 8), connected once on import.
 - [`services/axios.js`](services/axios.js) - shared axios instance with a custom `User-Agent` built from the consuming repo's own `package.json`, and a default timeout.
+- [`services/nodeCache.js`](services/nodeCache.js) - reads the MeshCore node buffers cached in Redis (`nodes:all`/`nodes:pl`/`nodes:updatedAt`, written by `meshcore-profiles/cronjobs`) and exposes `getCachedNodes`, `getLastRefreshedAt`, `getStats` (memoized per region via `utils/nodeStats.js`) and `formatWarsawDate`.
+- [`utils/nodeStats.js`](utils/nodeStats.js) - `REDIS_KEYS` plus pure node-stats computation (`getNodeStatus`, `computeStats`) shared by `services/nodeCache.js` and the cronjobs worker.
+- [`middlewares/morgan.js`](middlewares/morgan.js) - shared request logger (requires `morgan` from the consuming repo's own dependencies).
 - [`database/mongoose.js`](database/mongoose.js) - single Mongoose connection, connected on import.
 - [`database/syncIndexes.js`](database/syncIndexes.js) - standalone script that syncs Mongoose indexes for every model in the consuming repo's own `database/models` against the actual state in MongoDB.
 
