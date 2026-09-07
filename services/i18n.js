@@ -2,7 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const i18next = require('i18next');
 const { LanguageDetector } = require('i18next-http-middleware');
-const { AVAILABLE_LANGUAGES, DEFAULT_LANGUAGE, getLangCookie } = require('../../utils/languageResolver.js');
+const { AVAILABLE_LANGUAGES, DEFAULT_LANGUAGE, getLangCookie } = require('../utils/languageResolver.js');
 
 const LOCALES_DIR = path.join(__dirname, '..', '..', 'locales');
 const SUPPORTED = [...AVAILABLE_LANGUAGES];
