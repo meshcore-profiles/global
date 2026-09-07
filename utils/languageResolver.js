@@ -1,10 +1,11 @@
 const LANGUAGES = [
+	{ code: 'en', name: 'English', htmlLang: 'en', ogLocale: 'en_US' },
 	{ code: 'pl', name: 'Polski', htmlLang: 'pl', ogLocale: 'pl_PL' },
 ];
 
 const LANGUAGE_MAP = new Map(LANGUAGES.map(lang => [lang.code, lang]));
 const AVAILABLE_LANGUAGES = new Set(LANGUAGE_MAP.keys());
-const DEFAULT_LANGUAGE = 'pl';
+const DEFAULT_LANGUAGE = 'en';
 
 const prefixFor = language =>
 	language && language !== DEFAULT_LANGUAGE && AVAILABLE_LANGUAGES.has(language) ? `/${language}` : '';
