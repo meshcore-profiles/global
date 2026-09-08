@@ -28,7 +28,7 @@ detector.addDetector({
 		const cookieLang = getLangCookie(req);
 		if (cookieLang && AVAILABLE_LANGUAGES.has(cookieLang)) return cookieLang;
 
-		return DEFAULT_LANGUAGE;
+		return req.site?.defaultLanguage || DEFAULT_LANGUAGE;
 	},
 });
 
