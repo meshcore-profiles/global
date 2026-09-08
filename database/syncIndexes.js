@@ -5,9 +5,7 @@ const mongoose = require('mongoose');
 const fs = require('node:fs/promises');
 const path = require('node:path');
 
-// This submodule sits at <repo-root>/global/database/, but the Mongoose models it needs to sync
-// are app-specific and live in the consuming repo's own <repo-root>/database/models/.
-const modelsPath = path.join(__dirname, '..', '..', 'database', 'models');
+const modelsPath = path.join(__dirname, 'models');
 
 (async () => {
 	try {
