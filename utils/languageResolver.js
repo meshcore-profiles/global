@@ -59,7 +59,7 @@ const negotiatePreferred = (cookie, acceptLanguageHeader) => {
 };
 
 const LANGUAGE_AGNOSTIC_PATHS = new Set(['/robots.txt', '/sitemap.xml', '/manifest.json']);
-const isLanguageAgnosticPath = path => LANGUAGE_AGNOSTIC_PATHS.has(path);
+const isLanguageAgnosticPath = path => LANGUAGE_AGNOSTIC_PATHS.has(path) || path.startsWith('/api/');
 
 module.exports = {
 	LANGUAGES,
