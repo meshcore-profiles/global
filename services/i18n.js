@@ -51,4 +51,4 @@ i18next
 		returnEmptyString: false,
 	});
 
-module.exports = { i18next, resources, NAMESPACES };
+module.exports = { i18next, resources, NAMESPACES, SUPPORTED, FALLBACK_LANGUAGE };
