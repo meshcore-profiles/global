@@ -100,15 +100,15 @@ const connectTCP = () => {
 	});
 };
 
-const cleanup = () => {
+const cleanup = signal => {
 	if (tcpSocket && !tcpSocket.destroyed) tcpSocket.destroy();
 	if (reconnectTimer) clearTimeout(reconnectTimer);
 	failPendingRequests();
-	process.exit(0);
+	if (process.listenerCount(signal) === 1) process.exit(0);
 };
 
-process.on('SIGINT', cleanup);
-process.on('SIGTERM', cleanup);
+process.on('SIGINT', () => cleanup('SIGINT'));
+process.on('SIGTERM', () => cleanup('SIGTERM'));
 
 connectTCP();
 
@@ -196,6 +196,19 @@ const checkGoodBot = ip => {
 };
 
 /**
+ * Checks if IP address is one of this server's own external addresses (IPv4 or IPv6)
+ * @param {string} ip - IP address to check
+ * @returns {Promise<object|null>} Check result or null
+ * @example
+ * const result = await tcpClient.checkInternalIp('203.0.113.10');
+ * // { success: true, ip: '203.0.113.10', internal: true }
+ */
+const checkInternalIp = ip => {
+	if (!ip || !isIP(ip)) return Promise.resolve(null);
+	return sendRequest(`internal_ip:${encodeURIComponent(ip)}`);
+};
+
+/**
  * Checks if text contains any forbidden/banned words (with leet speak support and automatic censoring)
  * @param {string} text - Text content to analyze
  * @returns {Promise<object|null>} Analysis result or null
@@ -222,7 +235,7 @@ const checkWeakPassword = password => {
 };
 
 /**
- * Classifies image for NSFW content using TensorFlow model
+ * Classifies image for NSFW content
  * @param {string} imagePathOrUrl - Absolute path to image file or HTTPS URL
  * @returns {Promise<object|null>} Classification results or null
  * @example
@@ -230,7 +243,7 @@ const checkWeakPassword = password => {
  * const result = await tcpClient.checkNSFW('C:\\images\\photo.jpg');
  * // Remote URL
  * const result = await tcpClient.checkNSFW('https://cdn.discordapp.com/avatars/123456789/abc123.png');
- * // { success: true, classifications: { porn: 12.34, sexy: 23.45, neutral: 50.12, hentai: 5.67, drawing: 8.42 }, nsfwScore: 41.46 }
+ * // { success: true, rating: 'suggestive', classifications: { safe: 12.34, suggestive: 70.12, questionable: 15.01, nsfw: 2.53 }, nsfwScore: 87.66 }
  */
 const checkNSFW = imagePathOrUrl => {
 	if (!imagePathOrUrl || typeof imagePathOrUrl !== 'string') return Promise.resolve(null);
@@ -267,25 +280,26 @@ const ipCheck = ip => {
 };
 
 /**
- * Retrieves the full list of countries (ISO 3166-1 alpha-2 code, name, flag emoji)
+ * Retrieves the full list of countries (ISO 3166-1 alpha-2 code, native name, flag emoji), sorted by native name
  * @returns {Promise<object|null>} Countries list or null
  * @example
  * const result = await tcpClient.geoCountries();
- * // { success: true, countries: [{ iso2: 'PL', name: 'Poland', emoji: '🇵🇱' }, ...] }
+ * // { success: true, countries: [{ iso2: 'DE', name: 'Deutschland', emoji: '🇩🇪' }, ...] }
  */
 const geoCountries = () => sendRequest(`geo_places:${encodeURIComponent(JSON.stringify({ op: 'countries' }))}`);
 
 /**
  * Retrieves the states/provinces/voivodeships for a given country
  * @param {string} country - ISO 3166-1 alpha-2 country code (e.g. 'PL')
- * @returns {Promise<object|null>} States list or null
+ * @param {string} [lang] - Optional language code to localize state names (e.g. 'pl'); falls back to English when omitted or untranslated
+ * @returns {Promise<object|null>} States list, sorted by the localized name when `lang` is given, or null
  * @example
- * const result = await tcpClient.geoStates('PL');
- * // { success: true, states: [{ id: 3901, name: 'Silesian Voivodeship' }, ...] }
+ * const result = await tcpClient.geoStates('PL', 'pl');
+ * // { success: true, states: [{ id: 858851, name: 'Śląskie' }, ...] }
  */
-const geoStates = country => {
+const geoStates = (country, lang) => {
 	if (!country || typeof country !== 'string') return Promise.resolve(null);
-	return sendRequest(`geo_places:${encodeURIComponent(JSON.stringify({ op: 'states', country: country.trim() }))}`);
+	return sendRequest(`geo_places:${encodeURIComponent(JSON.stringify({ op: 'states', country: country.trim(), lang: lang || undefined }))}`);
 };
 
 /**
@@ -312,8 +326,9 @@ const geoCities = (country, state, query) => {
  * // {
  * //   success: true, status: 'ok',
  * //   connections: { active: 2, total: 10 },
- * //   cacheSize: { geoIp: 450, nsfw: 0, colors: 0, ipCheck: 120, goodBot: 30 },
+ * //   cacheSize: { geoIp: 450, nsfw: 0, colors: 0, ipCheck: 120, goodBot: 30, geoPlaces: 12 },
  * //   blacklist: 1250, goodBots: 89, forbiddenWords: 342, weakPasswords: 50000, ipLists: 15000,
+ * //   geoPlaces: { countries: 250, states: 3865 }, serverIpUpdatedAt: '2026-05-22T04:00:00.000Z',
  * //   startedAt: '2026-05-22T04:00:00.000Z', uptime: 3600,
  * //   requests: { global: { requests: 0, successes: 0, errors: 0 }, byCategory: { geo_check: {...}, ... } }
  * // }
@@ -330,6 +345,7 @@ module.exports = {
 	geoCheck,
 	checkTempEmail,
 	checkGoodBot,
+	checkInternalIp,
 	checkForbiddenWords,
 	checkWeakPassword,
 	ipCheck,
