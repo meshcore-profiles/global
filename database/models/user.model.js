@@ -151,5 +151,6 @@ UserSchema.index({ 'companions.name': 1 }, { unique: true });
 UserSchema.index(...partialUnique('companions.publicKey'));
 UserSchema.index({ 'devices.publicKey': 1 });
 UserSchema.index({ 'contactEmails.verificationToken': 1 }, { sparse: true });
+UserSchema.index({ 'profile.onboarded': 1, 'profile.hidden': 1, banned: 1, createdAt: -1 });
 
 module.exports = model('User', UserSchema);
