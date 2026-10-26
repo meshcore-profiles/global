@@ -132,5 +132,6 @@ UserSchema.index(
 UserSchema.index({ 'companions.name': 1 }, { unique: true });
 UserSchema.index({ 'companions.publicKey': 1 });
 UserSchema.index({ 'devices.publicKey': 1 });
+UserSchema.index({ 'contactEmails.verificationToken': 1 }, { sparse: true });
 
 module.exports = model('User', UserSchema);
