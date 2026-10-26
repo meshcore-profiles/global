@@ -81,6 +81,7 @@ const UserSchema = new Schema({
 		trim: true,
 		match: [/^\S+@\S+\.\S+$/, 'Invalid email'],
 	},
+	slug: { type: String, trim: true, lowercase: true, minlength: 3, maxlength: 30 },
 	language: { type: String, default: 'pl' },
 	roles: { type: [{ type: Number, enum: Object.keys(roles).map(Number) }], default: [1], required: true },
 	banned: { type: Boolean, default: false },
@@ -144,6 +145,7 @@ const UserSchema = new Schema({
 
 const partialUnique = field => [{ [field]: 1 }, { unique: true, partialFilterExpression: { [field]: { $exists: true } } }];
 
+UserSchema.index(...partialUnique('slug'));
 UserSchema.index(...partialUnique('auth.verificationCode'));
 UserSchema.index(...partialUnique('auth.passwordReset.token'));
 UserSchema.index({ 'auth.method': 1, 'auth.oauthId': 1 }, { unique: true, partialFilterExpression: { 'auth.oauthId': { $exists: true } } });
