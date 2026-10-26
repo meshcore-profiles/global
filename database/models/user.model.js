@@ -5,9 +5,7 @@ const AUTH_METHODS = ['local', 'google', 'discord', 'github'];
 const VERIFICATION_STATUSES = ['pending', 'approved', 'rejected'];
 const DEVICE_KINDS = ['repeater', 'roomServer'];
 const PUBLIC_KEY_REGEX = /^[0-9a-f]{64}$/;
-const ANTENNA_TYPES = ['', 'omni', 'dir'];
 const MAX_DEVICE_PHOTOS = 5;
-const MAX_COMPANION_PHOTOS = 1;
 
 const maxPhotos = max => ({
 	validator: v => v.length <= max,
@@ -43,7 +41,7 @@ const nodeFields = {
 const CompanionSchema = new Schema({
 	...nodeFields,
 	main: { type: Boolean, default: false },
-	photos: { ...nodeFields.photos, validate: maxPhotos(MAX_COMPANION_PHOTOS) },
+	photos: { ...nodeFields.photos, validate: maxPhotos(1) },
 }, { timestamps: true });
 
 const DeviceSchema = new Schema({
@@ -53,7 +51,7 @@ const DeviceSchema = new Schema({
 	power: { type: String, trim: true, maxlength: 60 },
 	antenna: {
 		name: { type: String, trim: true, maxlength: 60 },
-		type: { type: String, enum: ANTENNA_TYPES, default: '' },
+		type: { type: String, enum: ['', 'omni', 'dir'], default: '' },
 		heading: { type: String, trim: true, maxlength: 30 },
 		gain: { type: String, trim: true, maxlength: 30 },
 		height: { type: String, trim: true, maxlength: 30 },
@@ -139,7 +137,11 @@ const UserSchema = new Schema({
 			value: { type: String, trim: true, maxlength: 1000 },
 			public: { type: Boolean, default: false },
 		},
-		discord: { type: String, trim: true, maxlength: 60 },
+		discord: {
+			id: { type: String, trim: true, match: /^\d{17,20}$/ },
+			username: { type: String, trim: true, maxlength: 64 },
+			syncedAt: Date,
+		},
 		region: { type: String, trim: true, maxlength: 120 },
 		location: {
 			countryIso2: { type: String, trim: true, maxlength: 2 },
