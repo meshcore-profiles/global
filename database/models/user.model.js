@@ -151,10 +151,12 @@ const UserSchema = new Schema({
 	},
 	settings: {
 		allowMessages: { type: Boolean, default: true },
+		showPresence: { type: Boolean, default: true },
 	},
 	stats: {
 		views: { type: Number, default: 0 },
 		lastViewAt: { type: Date, default: null },
+		lastSeenAt: { type: Date, default: null },
 	},
 	verification: verificationFields(),
 
