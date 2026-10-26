@@ -7,7 +7,7 @@ const MAX_DETAILS_LENGTH = 500;
 const ReportSchema = new Schema({
 	reporter: { type: Schema.Types.ObjectId, ref: 'User', required: true },
 	reported: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-	message: { type: Schema.Types.ObjectId, required: true },
+	message: { type: Schema.Types.ObjectId, ref: 'Message', required: true },
 	snapshot: {
 		body: { type: String, required: true },
 		sentAt: { type: Date, required: true },

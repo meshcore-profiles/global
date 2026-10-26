@@ -5,7 +5,14 @@ const AUTH_METHODS = ['local', 'google', 'discord', 'github'];
 const VERIFICATION_STATUSES = ['pending', 'approved', 'rejected'];
 const DEVICE_KINDS = ['repeater', 'roomServer'];
 const PUBLIC_KEY_REGEX = /^[0-9a-f]{64}$/;
+const ANTENNA_TYPES = ['', 'omni', 'dir'];
 const MAX_DEVICE_PHOTOS = 5;
+const MAX_COMPANION_PHOTOS = 1;
+
+const maxPhotos = max => ({
+	validator: v => v.length <= max,
+	message: `Maximum ${max} photos allowed.`,
+});
 
 const verificationFields = () => ({
 	status: { type: String, enum: VERIFICATION_STATUSES, default: 'pending' },
@@ -27,10 +34,6 @@ const nodeFields = {
 	},
 	antenna: {
 		name: { type: String, trim: true, maxlength: 60 },
-		type: { type: String, trim: true, maxlength: 60 },
-		heading: { type: String, trim: true, maxlength: 30 },
-		gain: { type: String, trim: true, maxlength: 30 },
-		height: { type: String, trim: true, maxlength: 30 },
 	},
 	photos: { type: [String], default: [] },
 	public: { type: Boolean, default: false },
@@ -40,6 +43,7 @@ const nodeFields = {
 const CompanionSchema = new Schema({
 	...nodeFields,
 	main: { type: Boolean, default: false },
+	photos: { ...nodeFields.photos, validate: maxPhotos(MAX_COMPANION_PHOTOS) },
 }, { timestamps: true });
 
 const DeviceSchema = new Schema({
@@ -47,10 +51,14 @@ const DeviceSchema = new Schema({
 	kind: { type: String, enum: DEVICE_KINDS, required: true },
 	note: { type: String, trim: true, maxlength: 500 },
 	power: { type: String, trim: true, maxlength: 60 },
-	photos: {
-		...nodeFields.photos,
-		validate: { validator: v => v.length <= MAX_DEVICE_PHOTOS, message: `Maximum ${MAX_DEVICE_PHOTOS} photos per device.` },
+	antenna: {
+		name: { type: String, trim: true, maxlength: 60 },
+		type: { type: String, enum: ANTENNA_TYPES, default: '' },
+		heading: { type: String, trim: true, maxlength: 30 },
+		gain: { type: String, trim: true, maxlength: 30 },
+		height: { type: String, trim: true, maxlength: 30 },
 	},
+	photos: { ...nodeFields.photos, validate: maxPhotos(MAX_DEVICE_PHOTOS) },
 }, { timestamps: true });
 
 const ContactEmailSchema = new Schema({
@@ -85,6 +93,10 @@ const UserSchema = new Schema({
 	language: { type: String, default: 'pl' },
 	roles: { type: [{ type: Number, enum: Object.keys(roles).map(Number) }], default: [1], required: true },
 	banned: { type: Boolean, default: false },
+	ban: {
+		by: { type: Schema.Types.ObjectId, ref: 'User' },
+		at: Date,
+	},
 
 	auth: {
 		method: { type: String, enum: AUTH_METHODS, required: true, default: 'local' },
@@ -97,6 +109,7 @@ const UserSchema = new Schema({
 			select: false,
 		},
 		activated: { type: Boolean, default: false },
+		verificationExpires: Date,
 		verificationCode: {
 			type: String,
 			default: undefined,
@@ -157,10 +170,13 @@ UserSchema.index(...partialUnique('slug'));
 UserSchema.index(...partialUnique('auth.verificationCode'));
 UserSchema.index(...partialUnique('auth.passwordReset.token'));
 UserSchema.index({ 'auth.method': 1, 'auth.oauthId': 1 }, { unique: true, partialFilterExpression: { 'auth.oauthId': { $exists: true } } });
-UserSchema.index({ 'companions.name': 1 }, { unique: true });
+UserSchema.index(...partialUnique('companions.name'));
 UserSchema.index(...partialUnique('companions.publicKey'));
 UserSchema.index({ 'devices.publicKey': 1 });
 UserSchema.index({ 'contactEmails.verificationToken': 1 }, { sparse: true });
 UserSchema.index({ 'profile.onboarded': 1, 'profile.hidden': 1, banned: 1, createdAt: -1 });
+UserSchema.index({ 'verification.status': 1, 'profile.onboarded': 1 });
+UserSchema.index({ 'companions.verification.status': 1 });
+UserSchema.index({ 'devices.verification.status': 1 });
 
 module.exports = model('User', UserSchema);
