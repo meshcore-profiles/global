@@ -118,6 +118,10 @@ const UserSchema = new Schema({
 		hidden: { type: Boolean, default: false },
 		avatar: { type: String, trim: true, default: '' },
 		banner: { type: String, trim: true, default: '' },
+		bannerPosition: {
+			x: { type: Number, min: 0, max: 100, default: 50 },
+			y: { type: Number, min: 0, max: 100, default: 50 },
+		},
 		bio: {
 			value: { type: String, trim: true, maxlength: 1000 },
 			public: { type: Boolean, default: false },
