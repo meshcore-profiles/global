@@ -131,6 +131,9 @@ const UserSchema = new Schema({
 			city: { type: String, trim: true, maxlength: 120 },
 		},
 	},
+	settings: {
+		allowMessages: { type: Boolean, default: true },
+	},
 	verification: verificationFields(),
 
 	contactEmails: { type: [ContactEmailSchema], default: [] },
