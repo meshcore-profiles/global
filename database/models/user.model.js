@@ -148,6 +148,7 @@ const UserSchema = new Schema({
 			refreshToken: { type: String, select: false },
 			syncedAt: Date,
 		},
+		networkSince: { type: Date },
 		region: { type: String, trim: true, maxlength: 120 },
 		location: {
 			countryIso2: { type: String, trim: true, maxlength: 2 },
