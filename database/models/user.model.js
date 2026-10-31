@@ -1,59 +1,79 @@
 const { Schema, model } = require('mongoose');
 const { roles } = require('../../../utils/roles.js');
 
-const CompanionSchema = new Schema({
-	name: { type: String, required: true, trim: true, maxlength: 60 },
-	publicKey: { type: String, required: true, trim: true },
+const AUTH_METHODS = ['local', 'google', 'discord', 'github'];
+const VERIFICATION_STATUSES = ['pending', 'approved', 'rejected'];
+const DEVICE_KINDS = ['repeater', 'roomServer'];
+const POWER_SOURCES = ['', 'grid', 'solar', 'battery', 'vehicle', 'poe', 'other'];
+const PUBLIC_KEY_REGEX = /^[0-9a-f]{64}$/;
+const MAX_NODE_PHOTOS = 5;
+
+const maxPhotos = max => ({
+	validator: v => v.length <= max,
+	message: `Maximum ${max} photos allowed.`,
+});
+
+const verificationFields = () => ({
+	status: { type: String, enum: VERIFICATION_STATUSES, default: 'pending' },
+	reason: { type: String, trim: true, maxlength: 500 },
+	reviewedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+	reviewedAt: Date,
+});
+
+const nodeFields = {
+	name: { type: String, trim: true, maxlength: 60, required: true },
+	publicKey: { type: String, required: true, trim: true, lowercase: true, match: PUBLIC_KEY_REGEX },
 	model: { type: String, trim: true, maxlength: 60 },
-	preset: { type: String, trim: true, maxlength: 30 },
-	freq: { type: String, trim: true, maxlength: 30 },
-	bw: { type: String, trim: true, maxlength: 30 },
-	sf: { type: String, trim: true, maxlength: 30 },
-	cr: { type: String, trim: true, maxlength: 30 },
-	antenna: { type: String, trim: true, maxlength: 60 },
-	main: { type: Boolean, default: false },
-	photos: { type: [String], default: [] },
+	radio: {
+		preset: { type: String, trim: true, maxlength: 30 },
+		freq: { type: String, trim: true, maxlength: 30 },
+		bw: { type: String, trim: true, maxlength: 30 },
+		sf: { type: String, trim: true, maxlength: 30 },
+		cr: { type: String, trim: true, maxlength: 30 },
+	},
+	antenna: {
+		name: { type: String, trim: true, maxlength: 60 },
+	},
+	photos: { type: [String], default: [], validate: maxPhotos(MAX_NODE_PHOTOS) },
 	public: { type: Boolean, default: false },
-	verificationStatus: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
-	verificationReason: { type: String, trim: true, maxlength: 500 },
+	verification: verificationFields(),
+};
+
+const CompanionSchema = new Schema({
+	...nodeFields,
+	main: { type: Boolean, default: false },
 }, { timestamps: true });
 
 const DeviceSchema = new Schema({
-	kind: { type: String, enum: ['repeater', 'roomServer'], required: true },
-	name: { type: String, required: true, trim: true, maxlength: 60 },
-	publicKey: { type: String, required: true, trim: true },
+	...nodeFields,
+	kind: { type: String, enum: DEVICE_KINDS, required: true },
 	note: { type: String, trim: true, maxlength: 500 },
-	model: { type: String, trim: true, maxlength: 60 },
-	preset: { type: String, trim: true, maxlength: 30 },
-	freq: { type: String, trim: true, maxlength: 30 },
-	bw: { type: String, trim: true, maxlength: 30 },
-	sf: { type: String, trim: true, maxlength: 30 },
-	cr: { type: String, trim: true, maxlength: 30 },
-	antenna: { type: String, trim: true, maxlength: 60 },
-	antennaType: { type: String, trim: true, maxlength: 60 },
-	heading: { type: String, trim: true, maxlength: 30 },
-	gain: { type: String, trim: true, maxlength: 30 },
-	height: { type: String, trim: true, maxlength: 30 },
 	power: { type: String, trim: true, maxlength: 60 },
-	region: { type: String, trim: true, maxlength: 120 },
-	photos: { type: [String], default: [], validate: { validator: v => v.length <= 5, message: 'Maximum 5 photos per device.' } },
-	public: { type: Boolean, default: false },
-	verificationStatus: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
-	verificationReason: { type: String, trim: true, maxlength: 500 },
+	txPower: { type: String, trim: true, maxlength: 6 },
+	powerSource: { type: String, enum: POWER_SOURCES, default: '' },
+	solarPanel: { type: String, trim: true, maxlength: 7 },
+	battery: { type: String, trim: true, maxlength: 7 },
+	antenna: {
+		name: { type: String, trim: true, maxlength: 60 },
+		type: { type: String, enum: ['', 'omni', 'dir'], default: '' },
+		heading: { type: String, trim: true, maxlength: 30 },
+		gain: { type: String, trim: true, maxlength: 30 },
+		height: { type: String, trim: true, maxlength: 30 },
+	},
 }, { timestamps: true });
 
 const ContactEmailSchema = new Schema({
-	address: { type: String, required: true, trim: true, lowercase: true },
+	address: { type: String, trim: true, maxlength: 320, required: true, lowercase: true },
 	verified: { type: Boolean, default: false },
 	primary: { type: Boolean, default: false },
 	public: { type: Boolean, default: false },
 	verificationToken: { type: String, trim: true },
-	verificationExpires: { type: Date },
-	verificationSentAt: { type: Date },
+	verificationExpires: Date,
+	verificationSentAt: Date,
 }, { timestamps: true });
 
-const WebsiteEntrySchema = new Schema({
-	domain: { type: String, required: true, trim: true, lowercase: true, maxlength: 253 },
+const WebsiteSchema = new Schema({
+	domain: { type: String, trim: true, maxlength: 253, required: true, lowercase: true },
 	verified: { type: Boolean, default: false },
 	public: { type: Boolean, default: false },
 	method: { type: String, enum: ['dns', 'file'] },
@@ -61,76 +81,110 @@ const WebsiteEntrySchema = new Schema({
 }, { timestamps: true });
 
 const UserSchema = new Schema({
-	username: { type: String, required: true, unique: true, index: true, trim: true, minlength: 3, maxlength: 25 },
+	username: { type: String, trim: true, maxlength: 25, required: true, unique: true, minlength: 3 },
 	email: {
 		type: String,
 		required: true,
 		unique: true,
-		index: true,
 		lowercase: true,
 		trim: true,
 		match: [/^\S+@\S+\.\S+$/, 'Invalid email'],
 	},
-	passwordHash: { type: String, required: true, select: false },
-	activeAccount: { type: Boolean, default: false },
-	verificationCode: {
-		type: String,
-		default: undefined,
-		validate: {
-			validator(v) {
-				if (!this.activeAccount) return typeof v === 'string' && v.length > 0;
-				return true;
+	slug: { type: String, trim: true, lowercase: true, minlength: 3, maxlength: 30 },
+	language: { type: String, default: 'pl' },
+	roles: { type: [{ type: Number, enum: Object.keys(roles).map(Number) }], default: [1], required: true },
+	banned: { type: Boolean, default: false },
+	ban: {
+		by: { type: Schema.Types.ObjectId, ref: 'User' },
+		at: Date,
+	},
+
+	auth: {
+		method: { type: String, enum: AUTH_METHODS, required: true, default: 'local' },
+		oauthId: { type: String, default: undefined },
+		passwordHash: {
+			type: String,
+			required() {
+				return this.auth.method === 'local';
 			},
-			message: 'Verification code is required before account activation',
+			select: false,
+		},
+		activated: { type: Boolean, default: false },
+		verificationExpires: Date,
+		verificationCode: {
+			type: String,
+			default: undefined,
+			validate: {
+				validator(v) {
+					return this.auth.activated || (typeof v === 'string' && v.length > 0);
+				},
+				message: 'Verification code is required before account activation',
+			},
+		},
+		passwordReset: {
+			token: { type: String, default: undefined },
+			expires: { type: Date, default: undefined },
 		},
 	},
-	banned: { type: Boolean, default: false },
-	authMethod: { type: String, required: true, enum: ['local'], default: 'local' },
-	language: { type: String, default: 'pl' },
-	roles: { type: [Number], enum: Object.keys(roles).map(Number), default: [1], required: true },
 
-	onboardingCompleted: { type: Boolean, default: false },
-	verificationStatus: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
-	verificationReason: { type: String, trim: true, maxlength: 500 },
-	passwordReset: {
-		token: { type: String, default: undefined },
-		expires: { type: Date, default: undefined },
+	profile: {
+		onboarded: { type: Boolean, default: false },
+		hidden: { type: Boolean, default: false },
+		avatar: { type: String, trim: true, default: '' },
+		banner: { type: String, trim: true, default: '' },
+		bannerPosition: {
+			x: { type: Number, min: 0, max: 100, default: 50 },
+			y: { type: Number, min: 0, max: 100, default: 50 },
+		},
+		bio: {
+			value: { type: String, trim: true, maxlength: 1000 },
+			public: { type: Boolean, default: false },
+		},
+		discord: {
+			id: { type: String, trim: true, match: /^\d{17,20}$/ },
+			username: { type: String, trim: true, maxlength: 64 },
+			syncedAt: Date,
+		},
+		region: { type: String, trim: true, maxlength: 120 },
+		location: {
+			countryIso2: { type: String, trim: true, maxlength: 2 },
+			countryName: { type: String, trim: true, maxlength: 120 },
+			stateId: { type: String, trim: true, maxlength: 20 },
+			stateName: { type: String, trim: true, maxlength: 120 },
+			city: { type: String, trim: true, maxlength: 120 },
+		},
 	},
+	settings: {
+		allowMessages: { type: Boolean, default: true },
+		showPresence: { type: Boolean, default: true },
+		emailMessages: { type: Boolean, default: true },
+	},
+	stats: {
+		views: { type: Number, default: 0 },
+		lastViewAt: { type: Date, default: null },
+		lastSeenAt: { type: Date, default: null },
+	},
+	verification: verificationFields(),
 
-	region: { type: String, trim: true, maxlength: 120 },
-	location: {
-		countryIso2: { type: String, trim: true, maxlength: 2 },
-		countryName: { type: String, trim: true, maxlength: 120 },
-		stateId: { type: String, trim: true, maxlength: 20 },
-		stateName: { type: String, trim: true, maxlength: 120 },
-		city: { type: String, trim: true, maxlength: 120 },
-	},
-	avatar: { type: String, trim: true, default: '' },
-	banner: { type: String, trim: true, default: '' },
-	bio: {
-		value: { type: String, trim: true, maxlength: 1000 },
-		public: { type: Boolean, default: false },
-	},
-	discord: { type: String, trim: true, maxlength: 60 },
 	contactEmails: { type: [ContactEmailSchema], default: [] },
-	websites: { type: [WebsiteEntrySchema], default: [] },
+	websites: { type: [WebsiteSchema], default: [] },
 	companions: { type: [CompanionSchema], default: [] },
 	devices: { type: [DeviceSchema], default: [] },
-	profileHidden: { type: Boolean, default: false },
 }, { versionKey: false, timestamps: true });
 
-UserSchema.index(
-	{ verificationCode: 1 },
-	{ unique: true, partialFilterExpression: { verificationCode: { $exists: true } } }
-);
+const partialUnique = field => [{ [field]: 1 }, { unique: true, partialFilterExpression: { [field]: { $exists: true } } }];
 
-UserSchema.index(
-	{ 'passwordReset.token': 1 },
-	{ unique: true, partialFilterExpression: { 'passwordReset.token': { $exists: true } } }
-);
-
-UserSchema.index({ 'companions.name': 1 }, { unique: true });
-UserSchema.index({ 'companions.publicKey': 1 });
+UserSchema.index(...partialUnique('slug'));
+UserSchema.index(...partialUnique('auth.verificationCode'));
+UserSchema.index(...partialUnique('auth.passwordReset.token'));
+UserSchema.index({ 'auth.method': 1, 'auth.oauthId': 1 }, { unique: true, partialFilterExpression: { 'auth.oauthId': { $exists: true } } });
+UserSchema.index(...partialUnique('companions.name'));
+UserSchema.index(...partialUnique('companions.publicKey'));
 UserSchema.index({ 'devices.publicKey': 1 });
+UserSchema.index({ 'contactEmails.verificationToken': 1 }, { sparse: true });
+UserSchema.index({ 'profile.onboarded': 1, 'profile.hidden': 1, banned: 1, createdAt: -1 });
+UserSchema.index({ 'verification.status': 1, 'profile.onboarded': 1 });
+UserSchema.index({ 'companions.verification.status': 1 });
+UserSchema.index({ 'devices.verification.status': 1 });
 
 module.exports = model('User', UserSchema);
