@@ -1,4 +1,5 @@
 const { Schema, model } = require('mongoose');
+const { GifSchema, AttachmentSchema } = require('../schemas/messageContent.js');
 
 const REASONS = ['dislike', 'spam', 'harassment', 'misinformation', 'privateInfo', 'illegal', 'other'];
 const STATUSES = ['open', 'resolved', 'dismissed'];
@@ -9,7 +10,11 @@ const ReportSchema = new Schema({
 	reported: { type: Schema.Types.ObjectId, ref: 'User', required: true },
 	message: { type: Schema.Types.ObjectId, ref: 'Message', required: true },
 	snapshot: {
-		body: { type: String, required: true },
+		body: { type: String, default: '' },
+		gif: { type: GifSchema, default: undefined },
+		attachments: { type: [AttachmentSchema], default: undefined },
+		poll: { type: { _id: false, question: String, options: [String] }, default: undefined },
+		card: { type: { _id: false, kind: String, name: String, publicKey: String }, default: undefined },
 		sentAt: { type: Date, required: true },
 	},
 	reason: { type: String, enum: REASONS, required: true },
@@ -21,6 +26,8 @@ const ReportSchema = new Schema({
 
 ReportSchema.index({ reporter: 1, message: 1 }, { unique: true });
 ReportSchema.index({ status: 1, createdAt: -1 });
+ReportSchema.index({ message: 1 });
+ReportSchema.index({ 'snapshot.attachments.id': 1 }, { sparse: true });
 
 module.exports = model('Report', ReportSchema);
 module.exports.REASONS = REASONS;
