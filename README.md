@@ -17,7 +17,7 @@ Shared scripts used across every MeshCore backend project - added as a git submo
 - [meshcore-profiles/map](https://github.com/meshcore-profiles/map) (mapa.meshcorepolska.org / map.meshcoreprofiles.com)
 - [meshcore-profiles/website](https://github.com/meshcore-profiles/website) (meshcoreprofiles.com)
 - [meshcore-profiles/cronjobs](https://github.com/meshcore-profiles/cronjobs)
-- [meshcore-pl/website](https://github.com/meshcore-pl/website) (meshcorepolska.org)
+- [meshcore-pl/strona-www](https://github.com/meshcore-pl/strona-www) (meshcorepolska.org)
 - [meshcore-pl/dokumentacja](https://github.com/meshcore-pl/dokumentacja) (docs.meshcorepolska.org)
 - [meshcore-pl/flasher](https://github.com/meshcore-pl/flasher)
 
