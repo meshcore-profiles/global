@@ -4,8 +4,9 @@ const { roles } = require('../../../utils/roles.js');
 const AUTH_METHODS = ['local', 'google', 'discord', 'github'];
 const VERIFICATION_STATUSES = ['pending', 'approved', 'rejected'];
 const DEVICE_KINDS = ['repeater', 'roomServer'];
+const POWER_SOURCES = ['', 'grid', 'solar', 'battery', 'vehicle', 'poe', 'other'];
 const PUBLIC_KEY_REGEX = /^[0-9a-f]{64}$/;
-const MAX_DEVICE_PHOTOS = 5;
+const MAX_NODE_PHOTOS = 5;
 
 const maxPhotos = max => ({
 	validator: v => v.length <= max,
@@ -33,7 +34,7 @@ const nodeFields = {
 	antenna: {
 		name: { type: String, trim: true, maxlength: 60 },
 	},
-	photos: { type: [String], default: [] },
+	photos: { type: [String], default: [], validate: maxPhotos(MAX_NODE_PHOTOS) },
 	public: { type: Boolean, default: false },
 	verification: verificationFields(),
 };
@@ -41,7 +42,6 @@ const nodeFields = {
 const CompanionSchema = new Schema({
 	...nodeFields,
 	main: { type: Boolean, default: false },
-	photos: { ...nodeFields.photos, validate: maxPhotos(1) },
 }, { timestamps: true });
 
 const DeviceSchema = new Schema({
@@ -49,6 +49,10 @@ const DeviceSchema = new Schema({
 	kind: { type: String, enum: DEVICE_KINDS, required: true },
 	note: { type: String, trim: true, maxlength: 500 },
 	power: { type: String, trim: true, maxlength: 60 },
+	txPower: { type: String, trim: true, maxlength: 6 },
+	powerSource: { type: String, enum: POWER_SOURCES, default: '' },
+	solarPanel: { type: String, trim: true, maxlength: 7 },
+	battery: { type: String, trim: true, maxlength: 7 },
 	antenna: {
 		name: { type: String, trim: true, maxlength: 60 },
 		type: { type: String, enum: ['', 'omni', 'dir'], default: '' },
@@ -56,7 +60,6 @@ const DeviceSchema = new Schema({
 		gain: { type: String, trim: true, maxlength: 30 },
 		height: { type: String, trim: true, maxlength: 30 },
 	},
-	photos: { ...nodeFields.photos, validate: maxPhotos(MAX_DEVICE_PHOTOS) },
 }, { timestamps: true });
 
 const ContactEmailSchema = new Schema({
