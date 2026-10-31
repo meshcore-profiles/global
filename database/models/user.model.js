@@ -137,7 +137,7 @@ const UserSchema = new Schema({
 			y: { type: Number, min: 0, max: 100, default: 50 },
 		},
 		bio: {
-			value: { type: String, trim: true, maxlength: 1000 },
+			value: { type: String, trim: true, maxlength: 4000 },
 			public: { type: Boolean, default: false },
 		},
 		discord: {
