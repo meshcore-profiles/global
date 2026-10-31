@@ -143,6 +143,9 @@ const UserSchema = new Schema({
 		discord: {
 			id: { type: String, trim: true, match: /^\d{17,20}$/ },
 			username: { type: String, trim: true, maxlength: 64 },
+			displayName: { type: String, trim: true, maxlength: 64 },
+			avatar: { type: String, trim: true, match: /^(a_)?[0-9a-f]{32}$/ },
+			refreshToken: { type: String, select: false },
 			syncedAt: Date,
 		},
 		region: { type: String, trim: true, maxlength: 120 },
