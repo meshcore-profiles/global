@@ -33,6 +33,7 @@ const nodeFields = {
 	},
 	antenna: {
 		name: { type: String, trim: true, maxlength: 60 },
+		gain: { type: String, trim: true, maxlength: 30 },
 	},
 	photos: { type: [String], default: [], validate: maxPhotos(MAX_NODE_PHOTOS) },
 	public: { type: Boolean, default: false },
@@ -42,6 +43,7 @@ const nodeFields = {
 const CompanionSchema = new Schema({
 	...nodeFields,
 	main: { type: Boolean, default: false },
+	note: { type: String, trim: true, maxlength: 500 },
 }, { timestamps: true });
 
 const DeviceSchema = new Schema({
