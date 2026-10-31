@@ -4,7 +4,7 @@ const { roles } = require('../../../utils/roles.js');
 const AUTH_METHODS = ['local', 'google', 'discord', 'github'];
 const VERIFICATION_STATUSES = ['pending', 'approved', 'rejected'];
 const DEVICE_KINDS = ['repeater', 'roomServer'];
-const POWER_SOURCES = ['', 'grid', 'solar', 'battery', 'vehicle', 'poe', 'other'];
+const POWER_SOURCES = ['', 'grid', 'solar', 'battery', 'poe', 'other'];
 const PUBLIC_KEY_REGEX = /^[0-9a-f]{64}$/;
 const MAX_NODE_PHOTOS = 5;
 
@@ -158,6 +158,7 @@ const UserSchema = new Schema({
 		allowMessages: { type: Boolean, default: true },
 		showPresence: { type: Boolean, default: true },
 		emailMessages: { type: Boolean, default: true },
+		units: { type: String, enum: ['metric', 'imperial'], default: 'metric' },
 	},
 	stats: {
 		views: { type: Number, default: 0 },
@@ -178,6 +179,7 @@ UserSchema.index(...partialUnique('slug'));
 UserSchema.index(...partialUnique('auth.verificationCode'));
 UserSchema.index(...partialUnique('auth.passwordReset.token'));
 UserSchema.index({ 'auth.method': 1, 'auth.oauthId': 1 }, { unique: true, partialFilterExpression: { 'auth.oauthId': { $exists: true } } });
+UserSchema.index({ 'profile.discord.id': 1 }, { unique: true, partialFilterExpression: { 'profile.discord.id': { $exists: true } } });
 UserSchema.index(...partialUnique('companions.name'));
 UserSchema.index(...partialUnique('companions.publicKey'));
 UserSchema.index({ 'devices.publicKey': 1 });
