@@ -15,6 +15,7 @@ const ReportSchema = new Schema({
 		attachments: { type: [AttachmentSchema], default: undefined },
 		poll: { type: { _id: false, question: String, options: [String] }, default: undefined },
 		card: { type: { _id: false, kind: String, name: String, publicKey: String }, default: undefined },
+		context: { type: [{ _id: false, from: { type: Schema.Types.ObjectId, ref: 'User' }, at: Date, text: String }], default: undefined },
 		sentAt: { type: Date, required: true },
 	},
 	reason: { type: String, enum: REASONS, required: true },
@@ -27,6 +28,7 @@ const ReportSchema = new Schema({
 ReportSchema.index({ reporter: 1, message: 1 }, { unique: true });
 ReportSchema.index({ status: 1, createdAt: -1 });
 ReportSchema.index({ message: 1 });
+ReportSchema.index({ reported: 1, createdAt: -1 });
 ReportSchema.index({ 'snapshot.attachments.id': 1 }, { sparse: true });
 
 module.exports = model('Report', ReportSchema);

@@ -99,6 +99,8 @@ const UserSchema = new Schema({
 	ban: {
 		by: { type: Schema.Types.ObjectId, ref: 'User' },
 		at: Date,
+		reason: { type: String, maxlength: 500 },
+		until: Date,
 	},
 
 	auth: {
@@ -191,6 +193,8 @@ UserSchema.index(...partialUnique('companions.publicKey'));
 UserSchema.index({ 'devices.publicKey': 1 });
 UserSchema.index({ 'contactEmails.verificationToken': 1 }, { sparse: true });
 UserSchema.index({ 'profile.onboarded': 1, 'profile.hidden': 1, banned: 1, createdAt: -1 });
+UserSchema.index({ createdAt: -1 });
+UserSchema.index({ 'ban.until': 1 }, { partialFilterExpression: { banned: true } });
 UserSchema.index({ 'verification.status': 1, 'profile.onboarded': 1 });
 UserSchema.index({ 'companions.verification.status': 1 });
 UserSchema.index({ 'devices.verification.status': 1 });

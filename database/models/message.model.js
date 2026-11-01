@@ -37,6 +37,7 @@ const MessageSchema = new Schema({
 MessageSchema.index({ conversation: 1, _id: -1 });
 MessageSchema.index({ conversation: 1, to: 1, readAt: 1 });
 MessageSchema.index({ from: 1, createdAt: -1 });
+MessageSchema.index({ createdAt: -1 });
 MessageSchema.index({ to: 1 });
 MessageSchema.index({ 'attachments.id': 1 }, { sparse: true });
 MessageSchema.index({ from: 1, clientId: 1 }, { unique: true, partialFilterExpression: { clientId: { $type: 'string' } } });
