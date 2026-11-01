@@ -6,7 +6,11 @@ connect(process.env.MONGODB_URL).catch(err => {
 });
 
 connection.on('connected', () => console.log('Connected to the database successfully'));
-connection.on('disconnected', () => console.warn('MongoDB disconnected!'));
+
+let closing = false;
+connection.on('disconnecting', () => closing = true);
+connection.on('disconnected', () => (closing ? console.log('MongoDB disconnected') : console.warn('MongoDB disconnected unexpectedly!')));
+
 connection.on('error', err => {
 	console.error('MongoDB error:', err.message);
 	process.exit(1);
