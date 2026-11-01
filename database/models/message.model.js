@@ -3,12 +3,14 @@ const { GifSchema, AttachmentSchema, CardSchema } = require('../schemas/messageC
 
 const MAX_MESSAGE_LENGTH = 2000;
 
-const hasContent = doc => !!(doc.gif || doc.poll || doc.card || doc.attachments?.length);
+// body, poll.question, poll.options[].text and attachments[].name hold ciphertext (see services/account/messageCrypto.js), so lengths are validated before encryption, not here
+const hasContent =doc => !!(doc.gif || doc.poll || doc.card || doc.attachments?.length);
 
 const MessageSchema = new Schema({
+	conversation: { type: Schema.Types.ObjectId, ref: 'Conversation', required: true },
 	from: { type: Schema.Types.ObjectId, ref: 'User', required: true },
 	to: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-	body: { type: String, trim: true, required: function () { return !hasContent(this); }, default: '', maxlength: MAX_MESSAGE_LENGTH },
+	body: { type: String, trim: true, required: function () { return !hasContent(this); }, default: '' },
 	clientId: String,
 	gif: { type: GifSchema, default: undefined },
 	readAt: Date,
@@ -19,10 +21,10 @@ const MessageSchema = new Schema({
 	poll: {
 		type: {
 			_id: false,
-			question: { type: String, maxlength: 200 },
+			question: String,
 			multi: Boolean,
 			endsAt: Date,
-			options: [{ _id: false, id: Number, text: { type: String, maxlength: 80 }, emoji: { type: String, maxlength: 32 }, votes: [{ type: Schema.Types.ObjectId, ref: 'User' }] }],
+			options: [{ _id: false, id: Number, text: String, emoji: { type: String, maxlength: 32 }, votes: [{ type: Schema.Types.ObjectId, ref: 'User' }] }],
 		},
 		default: undefined,
 	},
@@ -32,10 +34,10 @@ const MessageSchema = new Schema({
 	},
 }, { versionKey: false, timestamps: { createdAt: true, updatedAt: false } });
 
-MessageSchema.index({ from: 1, to: 1, _id: -1 });
-MessageSchema.index({ to: 1, from: 1, _id: -1 });
-MessageSchema.index({ to: 1, readAt: 1 });
+MessageSchema.index({ conversation: 1, _id: -1 });
+MessageSchema.index({ conversation: 1, to: 1, readAt: 1 });
 MessageSchema.index({ from: 1, createdAt: -1 });
+MessageSchema.index({ to: 1 });
 MessageSchema.index({ 'attachments.id': 1 }, { sparse: true });
 MessageSchema.index({ from: 1, clientId: 1 }, { unique: true, partialFilterExpression: { clientId: { $type: 'string' } } });
 

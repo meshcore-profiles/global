@@ -10,7 +10,7 @@ const GifSchema = new Schema({
 
 const AttachmentSchema = new Schema({
 	id: { type: String, required: true },
-	name: { type: String, maxlength: 120 },
+	name: String,
 	mime: { type: String, maxlength: 100 },
 	size: Number,
 	previewSize: Number,
