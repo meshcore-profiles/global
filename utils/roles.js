@@ -1,0 +1,10 @@
+const ROLE = {
+	USER: 1,
+	OPERATOR_RPT: 2,
+	OPERATOR_RS: 3,
+	MODERATOR: 50,
+	ADMINISTRATOR: 98,
+	OWNER: 99,
+};
+
+module.exports = ROLE;

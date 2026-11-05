@@ -1,5 +1,5 @@
 const { Schema, model } = require('mongoose');
-const { roles } = require('../../../utils/roles.js');
+const ROLE = require('../../utils/roles.js');
 
 const AUTH_METHODS = ['local', 'google', 'discord', 'github'];
 const VERIFICATION_STATUSES = ['pending', 'approved', 'rejected'];
@@ -94,7 +94,7 @@ const UserSchema = new Schema({
 	},
 	slug: { type: String, trim: true, lowercase: true, minlength: 3, maxlength: 30 },
 	language: { type: String, default: 'pl' },
-	roles: { type: [{ type: Number, enum: Object.keys(roles).map(Number) }], default: [1], required: true },
+	roles: { type: [{ type: Number, enum: Object.values(ROLE) }], default: [ROLE.USER], required: true },
 	banned: { type: Boolean, default: false },
 	ban: {
 		by: { type: Schema.Types.ObjectId, ref: 'User' },
