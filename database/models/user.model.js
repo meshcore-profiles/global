@@ -7,11 +7,32 @@ const DEVICE_KINDS = ['repeater', 'roomServer'];
 const POWER_SOURCES = ['grid', 'solar', 'battery', 'poe', 'other'];
 const PUBLIC_KEY_REGEX = /^[0-9a-f]{64}$/;
 const MAX_NODE_PHOTOS = 5;
+const MAX_BIO_IMAGES = 5;
 
 const maxPhotos = max => ({
 	validator: v => v.length <= max,
 	message: `Maximum ${max} photos allowed.`,
 });
+
+const NsfwSchema = new Schema({
+	safe: Number,
+	suggestive: Number,
+	questionable: Number,
+	nsfw: Number,
+}, { _id: false });
+
+const ColorsSchema = new Schema({
+	dominant: { type: String, lowercase: true, match: /^#[0-9a-f]{6}$/ },
+	palette: [{ type: String, lowercase: true, match: /^#[0-9a-f]{6}$/ }],
+}, { _id: false });
+
+const ImageSchema = new Schema({
+	url: { type: String, required: true, trim: true },
+	width: { type: Number, required: true, min: 1 },
+	height: { type: Number, required: true, min: 1 },
+	nsfw: { type: NsfwSchema, default: undefined },
+	colors: { type: ColorsSchema, default: undefined },
+}, { _id: false });
 
 const verificationFields = () => ({
 	status: { type: String, enum: VERIFICATION_STATUSES, default: 'pending' },
@@ -36,7 +57,7 @@ const nodeFields = {
 		name: { type: String, trim: true, maxlength: 60 },
 		gain: { type: String, trim: true, maxlength: 30 },
 	},
-	photos: { type: [String], default: [], validate: maxPhotos(MAX_NODE_PHOTOS) },
+	photos: { type: [ImageSchema], default: [], validate: maxPhotos(MAX_NODE_PHOTOS) },
 	public: { type: Boolean, default: false },
 	verification: verificationFields(),
 };
@@ -135,8 +156,8 @@ const UserSchema = new Schema({
 	profile: {
 		onboarded: { type: Boolean, default: false },
 		hidden: { type: Boolean, default: false },
-		avatar: { type: String, trim: true, default: '' },
-		banner: { type: String, trim: true, default: '' },
+		avatar: { type: ImageSchema, default: undefined },
+		banner: { type: ImageSchema, default: undefined },
 		bannerPosition: {
 			x: { type: Number, min: 0, max: 100, default: 50 },
 			y: { type: Number, min: 0, max: 100, default: 50 },
@@ -145,6 +166,7 @@ const UserSchema = new Schema({
 			value: { type: String, trim: true, maxlength: 4000 },
 			public: { type: Boolean, default: false },
 		},
+		bioImages: { type: [ImageSchema], default: [], validate: maxPhotos(MAX_BIO_IMAGES) },
 		discord: {
 			id: { type: String, trim: true, match: /^\d{17,20}$/ },
 			username: { type: String, trim: true, maxlength: 64 },
