@@ -9,6 +9,11 @@ const PUBLIC_KEY_REGEX = /^[0-9a-f]{64}$/;
 const MAX_NODE_PHOTOS = 5;
 const MAX_BIO_IMAGES = 5;
 
+const integer = {
+	validator: Number.isInteger,
+	message: '{PATH} must be an integer.',
+};
+
 const maxPhotos = max => ({
 	validator: v => v.length <= max,
 	message: `Maximum ${max} photos allowed.`,
@@ -48,14 +53,14 @@ const nodeFields = {
 	pathHash: { type: Number, enum: [1, 2, 3] },
 	radio: {
 		preset: { type: String, trim: true, maxlength: 30 },
-		freq: { type: String, trim: true, maxlength: 30 },
-		bw: { type: String, trim: true, maxlength: 30 },
-		sf: { type: String, trim: true, maxlength: 30 },
-		cr: { type: String, trim: true, maxlength: 30 },
+		freq: { type: Number, min: 137, max: 1020 },
+		bw: { type: Number, min: 7.8, max: 500 },
+		sf: { type: Number, min: 5, max: 12, validate: integer },
+		cr: { type: Number, min: 5, max: 8, validate: integer },
 	},
 	antenna: {
 		name: { type: String, trim: true, maxlength: 60 },
-		gain: { type: String, trim: true, maxlength: 30 },
+		gain: { type: Number, min: -10, max: 30 },
 	},
 	photos: { type: [ImageSchema], default: [], validate: maxPhotos(MAX_NODE_PHOTOS) },
 	public: { type: Boolean, default: false },
@@ -73,16 +78,16 @@ const DeviceSchema = new Schema({
 	kind: { type: String, enum: DEVICE_KINDS, required: true },
 	note: { type: String, trim: true, maxlength: 500 },
 	power: { type: String, trim: true, maxlength: 60 },
-	txPower: { type: String, trim: true, maxlength: 6 },
+	txPower: { type: Number, min: -9, max: 30 },
 	powerSource: { type: String, enum: POWER_SOURCES },
-	solarPanel: { type: String, trim: true, maxlength: 7 },
-	battery: { type: String, trim: true, maxlength: 7 },
+	solarPanel: { type: Number, min: 0.1, max: 500 },
+	battery: { type: Number, min: 1, max: 200000 },
 	antenna: {
 		name: { type: String, trim: true, maxlength: 60 },
 		type: { type: String, enum: ['omni', 'dir'] },
-		heading: { type: String, trim: true, maxlength: 30 },
-		gain: { type: String, trim: true, maxlength: 30 },
-		height: { type: String, trim: true, maxlength: 30 },
+		heading: { type: Number, min: 0, max: 360 },
+		gain: { type: Number, min: -10, max: 30 },
+		height: { type: Number, min: 0, max: 600 },
 	},
 }, { timestamps: true });
 
