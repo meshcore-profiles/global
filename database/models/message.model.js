@@ -4,7 +4,7 @@ const { GifSchema, AttachmentSchema, CardSchema } = require('../schemas/messageC
 const MAX_MESSAGE_LENGTH = 2000;
 
 // body, poll.question, poll.options[].text and attachments[].name hold ciphertext (see services/account/messageCrypto.js), so lengths are validated before encryption, not here
-const hasContent =doc => !!(doc.gif || doc.poll || doc.card || doc.attachments?.length);
+const hasContent = doc => !!(doc.gif || doc.poll || doc.card || doc.attachments?.length);
 
 const MessageSchema = new Schema({
 	conversation: { type: Schema.Types.ObjectId, ref: 'Conversation', required: true },

@@ -14,10 +14,14 @@ const integer = {
 	message: '{PATH} must be an integer.',
 };
 
-const maxPhotos = max => ({
+const MAX_ITEMS = { companions: 20, devices: 50, contactEmails: 4, websites: 4 };
+
+const maxItems = (max, what) => ({
 	validator: v => v.length <= max,
-	message: `Maximum ${max} photos allowed.`,
+	message: `Maximum ${max} ${what} allowed.`,
 });
+
+const maxPhotos = max => maxItems(max, 'photos');
 
 const NsfwSchema = new Schema({
 	safe: Number,
@@ -120,7 +124,7 @@ const UserSchema = new Schema({
 		match: [/^\S+@\S+\.\S+$/, 'Invalid email'],
 	},
 	slug: { type: String, trim: true, lowercase: true, minlength: 3, maxlength: 30 },
-	language: { type: String, default: 'pl' },
+	language: { type: String, default: 'pl', trim: true, lowercase: true, match: /^[a-z]{2}$/ },
 	roles: { type: [{ type: Number, enum: Object.values(ROLE) }], default: [ROLE.USER], required: true },
 	banned: { type: Boolean, default: false },
 	ban: {
@@ -197,25 +201,26 @@ const UserSchema = new Schema({
 		units: { type: String, enum: ['metric', 'imperial'], default: 'metric' },
 	},
 	stats: {
-		views: { type: Number, default: 0 },
+		views: { type: Number, default: 0, min: 0 },
+		logins: { type: Number, default: 0, min: 0 },
 		lastViewAt: { type: Date, default: null },
 		lastSeenAt: { type: Date, default: null },
 	},
 	verification: verificationFields(),
 
-	contactEmails: { type: [ContactEmailSchema], default: [] },
-	websites: { type: [WebsiteSchema], default: [] },
-	companions: { type: [CompanionSchema], default: [] },
-	devices: { type: [DeviceSchema], default: [] },
+	contactEmails: { type: [ContactEmailSchema], default: [], validate: maxItems(MAX_ITEMS.contactEmails, 'contact emails') },
+	websites: { type: [WebsiteSchema], default: [], validate: maxItems(MAX_ITEMS.websites, 'websites') },
+	companions: { type: [CompanionSchema], default: [], validate: maxItems(MAX_ITEMS.companions, 'companions') },
+	devices: { type: [DeviceSchema], default: [], validate: maxItems(MAX_ITEMS.devices, 'devices') },
 }, { versionKey: false, timestamps: true });
 
-const partialUnique = field => [{ [field]: 1 }, { unique: true, partialFilterExpression: { [field]: { $exists: true } } }];
+const partialUnique = field => [{ [field]: 1 }, { unique: true, partialFilterExpression: { [field]: { $type: 'string' } } }];
 
 UserSchema.index(...partialUnique('slug'));
 UserSchema.index(...partialUnique('auth.verificationCode'));
 UserSchema.index(...partialUnique('auth.passwordReset.token'));
-UserSchema.index({ 'auth.method': 1, 'auth.oauthId': 1 }, { unique: true, partialFilterExpression: { 'auth.oauthId': { $exists: true } } });
-UserSchema.index({ 'profile.discord.id': 1 }, { unique: true, partialFilterExpression: { 'profile.discord.id': { $exists: true } } });
+UserSchema.index({ 'auth.method': 1, 'auth.oauthId': 1 }, { unique: true, partialFilterExpression: { 'auth.oauthId': { $type: 'string' } } });
+UserSchema.index({ 'profile.discord.id': 1 }, { unique: true, partialFilterExpression: { 'profile.discord.id': { $type: 'string' } } });
 UserSchema.index(...partialUnique('companions.name'));
 UserSchema.index(...partialUnique('companions.publicKey'));
 UserSchema.index({ 'devices.publicKey': 1 });
@@ -228,3 +233,4 @@ UserSchema.index({ 'companions.verification.status': 1 });
 UserSchema.index({ 'devices.verification.status': 1 });
 
 module.exports = model('User', UserSchema);
+module.exports.MAX_ITEMS = MAX_ITEMS;
