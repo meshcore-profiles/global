@@ -53,8 +53,8 @@ const nodeFields = {
 	pathHash: { type: Number, enum: [1, 2, 3] },
 	radio: {
 		preset: { type: String, trim: true, maxlength: 30 },
-		freq: { type: Number, min: 137, max: 1020 },
-		bw: { type: Number, min: 7.8, max: 500 },
+		freq: { type: Number, min: 137, max: 2500 },
+		bw: { type: Number, min: 7.8, max: 1625 },
 		sf: { type: Number, min: 5, max: 12, validate: integer },
 		cr: { type: Number, min: 5, max: 8, validate: integer },
 	},
