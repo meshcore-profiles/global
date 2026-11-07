@@ -4,7 +4,7 @@ const ROLE = require('../../utils/roles.js');
 const AUTH_METHODS = ['local', 'google', 'discord', 'github'];
 const VERIFICATION_STATUSES = ['pending', 'approved', 'rejected'];
 const DEVICE_KINDS = ['repeater', 'roomServer'];
-const POWER_SOURCES = ['', 'grid', 'solar', 'battery', 'poe', 'other'];
+const POWER_SOURCES = ['grid', 'solar', 'battery', 'poe', 'other'];
 const PUBLIC_KEY_REGEX = /^[0-9a-f]{64}$/;
 const MAX_NODE_PHOTOS = 5;
 
@@ -24,6 +24,7 @@ const nodeFields = {
 	name: { type: String, trim: true, maxlength: 60, required: true },
 	publicKey: { type: String, required: true, trim: true, lowercase: true, match: PUBLIC_KEY_REGEX },
 	model: { type: String, trim: true, maxlength: 60 },
+	pathHash: { type: Number, enum: [1, 2, 3] },
 	radio: {
 		preset: { type: String, trim: true, maxlength: 30 },
 		freq: { type: String, trim: true, maxlength: 30 },
@@ -52,12 +53,12 @@ const DeviceSchema = new Schema({
 	note: { type: String, trim: true, maxlength: 500 },
 	power: { type: String, trim: true, maxlength: 60 },
 	txPower: { type: String, trim: true, maxlength: 6 },
-	powerSource: { type: String, enum: POWER_SOURCES, default: '' },
+	powerSource: { type: String, enum: POWER_SOURCES },
 	solarPanel: { type: String, trim: true, maxlength: 7 },
 	battery: { type: String, trim: true, maxlength: 7 },
 	antenna: {
 		name: { type: String, trim: true, maxlength: 60 },
-		type: { type: String, enum: ['', 'omni', 'dir'], default: '' },
+		type: { type: String, enum: ['omni', 'dir'] },
 		heading: { type: String, trim: true, maxlength: 30 },
 		gain: { type: String, trim: true, maxlength: 30 },
 		height: { type: String, trim: true, maxlength: 30 },
