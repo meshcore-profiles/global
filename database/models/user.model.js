@@ -27,7 +27,7 @@ const ColorsSchema = new Schema({
 }, { _id: false });
 
 const ImageSchema = new Schema({
-	url: { type: String, required: true, trim: true },
+	path: { type: String, required: true, trim: true, match: /^\/[^\s?#]+$/ },
 	width: { type: Number, required: true, min: 1 },
 	height: { type: Number, required: true, min: 1 },
 	nsfw: { type: NsfwSchema, default: undefined },
