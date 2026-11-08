@@ -69,6 +69,10 @@ const nodeFields = {
 		gain: { type: Number, min: -10, max: 30 },
 	},
 	photos: { type: [ImageSchema], default: [], validate: maxPhotos(MAX_NODE_PHOTOS) },
+	coverPosition: {
+		x: { type: Number, min: 0, max: 100, default: 50 },
+		y: { type: Number, min: 0, max: 100, default: 50 },
+	},
 	public: { type: Boolean, default: false },
 	verification: verificationFields(),
 };
