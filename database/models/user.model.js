@@ -86,6 +86,10 @@ const CompanionSchema = new Schema({
 const DeviceSchema = new Schema({
 	...nodeFields,
 	kind: { type: String, enum: DEVICE_KINDS, required: true },
+	location: {
+		lat: { type: Number, min: -90, max: 90 },
+		lon: { type: Number, min: -180, max: 180 },
+	},
 	note: { type: String, trim: true, maxlength: 500 },
 	power: { type: String, trim: true, maxlength: 60 },
 	txPower: { type: Number, min: -9, max: 30 },
