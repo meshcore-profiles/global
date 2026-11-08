@@ -183,6 +183,19 @@ const checkTempEmail = email => {
 };
 
 /**
+ * Checks whether a domain is on a blocklist for website verification (site builders, abused or reserved TLDs)
+ * @param {string} domain - Domain to check
+ * @returns {Promise<object|null>} Result or null
+ * @example
+ * const result = await tcpClient.checkBlockedDomain('shop.wix.com');
+ * // { success: true, domain: 'shop.wix.com', blocked: true, reason: 'builder' }
+ */
+const checkBlockedDomain = domain => {
+	if (!domain || typeof domain !== 'string') return Promise.resolve(null);
+	return sendRequest(`blocked_domains:${encodeURIComponent(domain.trim())}`);
+};
+
+/**
  * Checks if IP address belongs to a known legitimate bot
  * @param {string} ip - IP address to check
  * @returns {Promise<object|null>} Bot information or null
@@ -344,6 +357,7 @@ const isClientConnected = () => isConnected;
 module.exports = {
 	geoCheck,
 	checkTempEmail,
+	checkBlockedDomain,
 	checkGoodBot,
 	checkInternalIp,
 	checkForbiddenWords,

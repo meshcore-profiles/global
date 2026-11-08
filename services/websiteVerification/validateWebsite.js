@@ -1,7 +1,7 @@
 const axios = require('../axios.js');
 const safeRequest = require('./safeRequest.js');
 const { dnsResolver, isBlocklisted } = require('./localDns.js');
-const { isBlockedTLD, isBlockedBuilder } = require('./blockedDomains.js');
+const tcpClient = require('../tcpClient.js');
 const User = require('../../database/models/user.model.js');
 
 const DOMAIN_REGEX = /^([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
@@ -58,8 +58,10 @@ const initialValidation = async (domain, userId = null, signal) => {
 	if (!domain || typeof domain !== 'string') return rejected('invalidValue');
 
 	if (!DOMAIN_REGEX.test(domain)) return rejected('invalidFormat');
-	if (isBlockedTLD(domain)) return rejected('blockedTld');
-	if (isBlockedBuilder(domain)) return rejected('blockedBuilder');
+
+	const listing = await tcpClient.checkBlockedDomain(domain);
+	if (!listing?.success) return rejected('listUnavailable');
+	if (listing.blocked) return rejected(listing.reason === 'tld' ? 'blockedTld' : 'blockedBuilder');
 
 	const existing = await User.findOne({
 		'websites.domain': domain,
