@@ -1,5 +1,6 @@
 const { Schema, model } = require('mongoose');
 const ROLE = require('../../utils/roles.js');
+const PROFILE_VISIBILITY = require('../../utils/profileVisibility.js');
 
 const AUTH_METHODS = ['local', 'google', 'discord', 'github'];
 const VERIFICATION_STATUSES = ['pending', 'approved', 'rejected'];
@@ -190,7 +191,7 @@ const UserSchema = new Schema({
 
 	profile: {
 		onboarded: { type: Boolean, default: false },
-		hidden: { type: Boolean, default: false },
+		visibility: { type: String, enum: Object.values(PROFILE_VISIBILITY), default: PROFILE_VISIBILITY.PUBLIC },
 		avatar: { type: ImageSchema, default: undefined },
 		banner: { type: ImageSchema, default: undefined },
 		bannerPosition: {
@@ -253,7 +254,7 @@ UserSchema.index(...partialUnique('companions.publicKey'));
 UserSchema.index({ 'devices.publicKey': 1 });
 UserSchema.index({ 'passkeys.credentialId': 1 }, { unique: true, partialFilterExpression: { 'passkeys.credentialId': { $type: 'string' } } });
 UserSchema.index({ 'contactEmails.verificationToken': 1 }, { sparse: true });
-UserSchema.index({ 'profile.onboarded': 1, 'profile.hidden': 1, banned: 1, createdAt: -1 });
+UserSchema.index({ 'profile.onboarded': 1, 'profile.visibility': 1, banned: 1, createdAt: -1 });
 UserSchema.index({ createdAt: -1 });
 UserSchema.index({ 'ban.until': 1 }, { partialFilterExpression: { banned: true } });
 UserSchema.index({ 'verification.status': 1, 'profile.onboarded': 1 });
