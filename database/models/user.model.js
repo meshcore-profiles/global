@@ -5,6 +5,7 @@ const AUTH_METHODS = ['local', 'google', 'discord', 'github'];
 const VERIFICATION_STATUSES = ['pending', 'approved', 'rejected'];
 const DEVICE_KINDS = ['repeater', 'roomServer'];
 const POWER_SOURCES = ['grid', 'solar', 'battery', 'poe', 'other'];
+const PASSKEY_TRANSPORTS = ['usb', 'nfc', 'ble', 'internal', 'hybrid', 'smart-card'];
 const PUBLIC_KEY_REGEX = /^[0-9a-f]{64}$/;
 const MAX_NODE_PHOTOS = 5;
 const MAX_BIO_IMAGES = 5;
@@ -14,7 +15,7 @@ const integer = {
 	message: '{PATH} must be an integer.',
 };
 
-const MAX_ITEMS = { companions: 20, devices: 50, contactEmails: 4, websites: 4 };
+const MAX_ITEMS = { companions: 20, devices: 50, contactEmails: 4, websites: 4, passkeys: 10 };
 
 const maxItems = (max, what) => ({
 	validator: v => v.length <= max,
@@ -127,6 +128,17 @@ const WebsiteSchema = new Schema({
 	revocation: { type: WebsiteRevocationSchema, default: undefined },
 }, { timestamps: true });
 
+const PasskeySchema = new Schema({
+	credentialId: { type: String, required: true, trim: true, maxlength: 1024 },
+	publicKey: { type: String, required: true, maxlength: 2048 },
+	counter: { type: Number, default: 0, min: 0 },
+	transports: { type: [{ type: String, enum: PASSKEY_TRANSPORTS }], default: [] },
+	backedUp: { type: Boolean, default: false },
+	userVerified: { type: Boolean, default: true },
+	name: { type: String, trim: true, maxlength: 40, required: true },
+	lastUsedAt: Date,
+}, { timestamps: true });
+
 const UserSchema = new Schema({
 	username: { type: String, trim: true, maxlength: 25, required: true, unique: true, minlength: 3 },
 	email: {
@@ -223,6 +235,7 @@ const UserSchema = new Schema({
 	verification: verificationFields(),
 
 	contactEmails: { type: [ContactEmailSchema], default: [], validate: maxItems(MAX_ITEMS.contactEmails, 'contact emails') },
+	passkeys: { type: [PasskeySchema], default: [], validate: maxItems(MAX_ITEMS.passkeys, 'passkeys') },
 	websites: { type: [WebsiteSchema], default: [], validate: maxItems(MAX_ITEMS.websites, 'websites') },
 	companions: { type: [CompanionSchema], default: [], validate: maxItems(MAX_ITEMS.companions, 'companions') },
 	devices: { type: [DeviceSchema], default: [], validate: maxItems(MAX_ITEMS.devices, 'devices') },
@@ -238,6 +251,7 @@ UserSchema.index({ 'profile.discord.id': 1 }, { unique: true, partialFilterExpre
 UserSchema.index(...partialUnique('companions.name'));
 UserSchema.index(...partialUnique('companions.publicKey'));
 UserSchema.index({ 'devices.publicKey': 1 });
+UserSchema.index({ 'passkeys.credentialId': 1 }, { unique: true, partialFilterExpression: { 'passkeys.credentialId': { $type: 'string' } } });
 UserSchema.index({ 'contactEmails.verificationToken': 1 }, { sparse: true });
 UserSchema.index({ 'profile.onboarded': 1, 'profile.hidden': 1, banned: 1, createdAt: -1 });
 UserSchema.index({ createdAt: -1 });
