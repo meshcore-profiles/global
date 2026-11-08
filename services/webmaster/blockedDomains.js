@@ -23,7 +23,10 @@ const BLOCKED_BUILDERS = [
 	'wixstatic.com', 'yolasite.com', 'zyro.com',
 ];
 
-const BLOCKED_TLDS = ['.tk', '.ml', '.cf', '.gq', '.ga'];
+const BLOCKED_TLDS = [
+	'.tk', '.ml', '.cf', '.gq', '.ga',
+	'.local', '.localhost', '.test', '.example', '.invalid', '.onion', '.internal', '.lan', '.home', '.corp', '.arpa',
+];
 
 module.exports = {
 	isBlockedBuilder(domain) {
