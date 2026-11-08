@@ -105,12 +105,26 @@ const ContactEmailSchema = new Schema({
 	verificationSentAt: Date,
 }, { timestamps: true });
 
+const WebsiteScanSchema = new Schema({
+	at: { type: Date, required: true },
+	ok: { type: Boolean, required: true },
+	key: { type: String, trim: true },
+	failures: { type: Number, default: 0, min: 0 },
+}, { _id: false });
+
+const WebsiteRevocationSchema = new Schema({
+	at: { type: Date, required: true },
+	key: { type: String, trim: true },
+}, { _id: false });
+
 const WebsiteSchema = new Schema({
 	domain: { type: String, trim: true, maxlength: 253, required: true, lowercase: true },
 	verified: { type: Boolean, default: false },
 	public: { type: Boolean, default: false },
 	method: { type: String, enum: ['dns', 'file'] },
 	verificationToken: { type: String, trim: true },
+	scan: { type: WebsiteScanSchema, default: undefined },
+	revocation: { type: WebsiteRevocationSchema, default: undefined },
 }, { timestamps: true });
 
 const UserSchema = new Schema({
