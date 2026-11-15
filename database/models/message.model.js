@@ -10,7 +10,7 @@ const MessageSchema = new Schema({
 	conversation: { type: Schema.Types.ObjectId, ref: 'Conversation', required: true },
 	from: { type: Schema.Types.ObjectId, ref: 'User', required: true },
 	to: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-	body: { type: String, trim: true, required: function () { return !hasContent(this); }, default: '' },
+	body: { type: String, trim: true, required() { return !hasContent(this); }, default: '' },
 	clientId: String,
 	gif: { type: GifSchema, default: undefined },
 	readAt: Date,
