@@ -12,7 +12,7 @@ const modelsPath = path.join(import.meta.dirname, 'models');
 	try {
 		const files = await fs.readdir(modelsPath, { recursive: true });
 
-		for (const file of files.filter(file => file.endsWith('.js'))) {
+		for (const file of files.filter(f => f.endsWith('.js'))) {
 			await import(pathToFileURL(path.join(modelsPath, file)).href);
 		}
 
