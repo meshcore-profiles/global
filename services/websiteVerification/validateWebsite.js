@@ -6,8 +6,8 @@ import User from '../../database/models/user.model.js';
 
 const DOMAIN_REGEX = /^([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
 
-// Underscore-prefixed label (RFC 8552), like ACME's _acme-challenge; the old label stays accepted for domains verified before it
-const TXT_LABELS = ['_mcprofiles-verify', 'mcprofiles-verify'];
+// Underscore-prefixed label (RFC 8552), like ACME's _acme-challenge
+const TXT_LABEL = '_mcprofiles-verify';
 const TXT_VALUE_PREFIX = 'mcprofiles-site-verification=';
 const VERIFICATION_FILE_NAME = 'mcprofiles-verification.html';
 const VERIFICATION_META_NAME = 'mcprofiles-site-verification';
@@ -162,16 +162,16 @@ const fetchVerificationFile = async (domain, token, signal) => {
 };
 
 const verifyDomainOwnership = async (domain, token, signal) => {
-	const [dnsAnswers, file] = await Promise.all([
-		Promise.all(TXT_LABELS.map(label => lookupTxt(`${label}.${domain}`))),
+	const [dnsAnswer, file] = await Promise.all([
+		lookupTxt(`${TXT_LABEL}.${domain}`),
 		fetchVerificationFile(domain, token, signal),
 	]);
 
-	if (dnsAnswers.some(answer => answer.records?.some(record => matchesToken(record, token)))) return { ok: true, method: 'dns' };
+	if (dnsAnswer.records?.some(record => matchesToken(record, token))) return { ok: true, method: 'dns' };
 	if (file.matched) return { ok: true, method: 'file' };
 
-	const params = { record: `${TXT_LABELS[0]}.${domain}`, path: VERIFICATION_FILE_PATHS[0] };
-	if (file.failed || dnsAnswers.every(answer => answer.failed)) return rejected('verificationUnavailable', params);
+	const params = { record: `${TXT_LABEL}.${domain}`, path: VERIFICATION_FILE_PATHS[0] };
+	if (file.failed || dnsAnswer.failed) return rejected('verificationUnavailable', params);
 
 	return rejected('ownershipNotFound', params);
 };
@@ -182,4 +182,4 @@ const verifyWebsite = async ({ domain, token, userId = null, signal }) => {
 	return qualification.ok ? verifyDomainOwnership(domain, token, signal) : qualification;
 };
 
-export { initialValidation, verifyDomainOwnership, verifyWebsite, DOMAIN_REGEX, TXT_LABELS, TXT_VALUE_PREFIX, VERIFICATION_FILE_NAME, VERIFICATION_META_NAME, VERIFICATION_FILE_PATHS };
+export { initialValidation, verifyDomainOwnership, verifyWebsite, DOMAIN_REGEX, TXT_LABEL, TXT_VALUE_PREFIX, VERIFICATION_FILE_NAME, VERIFICATION_META_NAME, VERIFICATION_FILE_PATHS };
