@@ -1,10 +1,9 @@
+import '../../loadEnv.js';
 import mongoose from 'mongoose';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-
-process.loadEnvFile();
-await import('./mongoose.js');
+import './mongoose.js';
 
 const modelsPath = path.join(import.meta.dirname, 'models');
 
