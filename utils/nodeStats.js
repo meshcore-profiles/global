@@ -1,4 +1,6 @@
-const REDIS_KEYS = { all: 'nodes:all', pl: 'nodes:pl', updatedAt: 'nodes:updatedAt' };
+import { MESHCORE_KEYS } from './redisKeys.js';
+
+const REDIS_KEYS = MESHCORE_KEYS.nodes;
 
 const REPEATER_TYPE = 2;
 const DAY_MS = 24 * 60 * 60 * 1000;
