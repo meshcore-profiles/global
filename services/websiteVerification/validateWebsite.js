@@ -9,10 +9,13 @@ const DOMAIN_REGEX = /^([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{
 // Underscore-prefixed label (RFC 8552), like ACME's _acme-challenge; the old label stays accepted for domains verified before it
 const TXT_LABELS = ['_mcprofiles-verify', 'mcprofiles-verify'];
 const TXT_VALUE_PREFIX = 'mcprofiles-site-verification=';
-const VERIFICATION_FILE_PATH = '/.well-known/meshcore-verify.txt';
+const VERIFICATION_FILE_NAME = 'mcprofiles-verification.html';
+const VERIFICATION_META_NAME = 'mcprofiles-site-verification';
+const VERIFICATION_TXT_NAME = 'mcprofiles-verification.txt';
+const VERIFICATION_FILE_PATHS = [VERIFICATION_FILE_NAME, VERIFICATION_TXT_NAME].flatMap(name => [`/${name}`, `/.well-known/${name}`]);
 
 const MAX_PAGE_BYTES = 5 * 1024 * 1024;
-const MAX_FILE_BYTES = 2048;
+const MAX_FILE_BYTES = 8192;
 const NO_CACHE = { 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' };
 const ABSENT_RECORD_CODES = new Set(['ENODATA', 'ENOTFOUND']);
 
@@ -48,6 +51,14 @@ const servedBy = (res, domain) => {
 		return false;
 	}
 };
+
+const metaAttr = (tag, name) => {
+	const match = tag.match(new RegExp(String.raw`\b${name}\s*=\s*(?:"([^"]*)"|'([^']*)')`, 'i'));
+	return match ? (match[1] ?? match[2]) : null;
+};
+
+const hasVerificationMeta = (html, token) => (html.match(/<meta\s[^>]*>/gi) || [])
+	.some(tag => metaAttr(tag, 'name') === VERIFICATION_META_NAME && String(metaAttr(tag, 'content')).trim() === token);
 
 const matchesToken = (value, token) => {
 	const trimmed = String(value).trim();
@@ -118,9 +129,15 @@ const lookupTxt = async name => {
 	}
 };
 
-const fetchVerificationFile = async (domain, signal) => {
+// The HTML file is the documented method; a plain text file holding the DNS-style value is accepted as a fallback
+const fileMatches = (path, body, token) => (path.endsWith('.txt') ? matchesToken(body, token) : hasVerificationMeta(body, token));
+
+// A body over the limit is a regular page (e.g. a custom 404), not our file: it counts as "not found", not as a failed check
+const isOversized = err => err.code === 'ERR_FR_MAX_CONTENT_LENGTH_EXCEEDED' || /maxContentLength/.test(err.message);
+
+const checkVerificationPath = async (domain, path, token, signal) => {
 	try {
-		const res = await axios.get(`https://${domain}${VERIFICATION_FILE_PATH}?ts=${Date.now()}`, {
+		const res = await axios.get(`https://${domain}${path}?ts=${Date.now()}`, {
 			...safeRequest,
 			signal,
 			timeout: 9000,
@@ -131,25 +148,30 @@ const fetchVerificationFile = async (domain, signal) => {
 			headers: NO_CACHE,
 		});
 
-		return { res };
-	} catch {
-		return { failed: true };
+		return res.status === 200 && servedBy(res, domain) && typeof res.data === 'string' && fileMatches(path, res.data, token);
+	} catch (err) {
+		if (isOversized(err)) return false;
+		throw err;
 	}
+};
+
+const fetchVerificationFile = async (domain, token, signal) => {
+	const results = await Promise.allSettled(VERIFICATION_FILE_PATHS.map(path => checkVerificationPath(domain, path, token, signal)));
+
+	return { matched: results.some(r => r.value === true), failed: results.every(r => r.status === 'rejected') };
 };
 
 const verifyDomainOwnership = async (domain, token, signal) => {
 	const [dnsAnswers, file] = await Promise.all([
 		Promise.all(TXT_LABELS.map(label => lookupTxt(`${label}.${domain}`))),
-		fetchVerificationFile(domain, signal),
+		fetchVerificationFile(domain, token, signal),
 	]);
 
 	if (dnsAnswers.some(answer => answer.records?.some(record => matchesToken(record, token)))) return { ok: true, method: 'dns' };
+	if (file.matched) return { ok: true, method: 'file' };
 
-	const { res } = file;
-	if (res?.status === 200 && servedBy(res, domain) && typeof res.data === 'string' && matchesToken(res.data, token)) return { ok: true, method: 'file' };
-
-	const params = { record: `${TXT_LABELS[0]}.${domain}`, path: VERIFICATION_FILE_PATH };
-	if (file.failed || dnsAnswers.some(answer => answer.failed)) return rejected('verificationUnavailable', params);
+	const params = { record: `${TXT_LABELS[0]}.${domain}`, path: VERIFICATION_FILE_PATHS[0] };
+	if (file.failed || dnsAnswers.every(answer => answer.failed)) return rejected('verificationUnavailable', params);
 
 	return rejected('ownershipNotFound', params);
 };
@@ -160,4 +182,4 @@ const verifyWebsite = async ({ domain, token, userId = null, signal }) => {
 	return qualification.ok ? verifyDomainOwnership(domain, token, signal) : qualification;
 };
 
-export { initialValidation, verifyDomainOwnership, verifyWebsite, DOMAIN_REGEX, TXT_LABELS, TXT_VALUE_PREFIX, VERIFICATION_FILE_PATH };
+export { initialValidation, verifyDomainOwnership, verifyWebsite, DOMAIN_REGEX, TXT_LABELS, TXT_VALUE_PREFIX, VERIFICATION_FILE_NAME, VERIFICATION_META_NAME, VERIFICATION_FILE_PATHS };

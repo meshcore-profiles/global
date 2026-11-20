@@ -7,7 +7,7 @@ const LOCAL_DNS = [
 ];
 
 const dnsResolver = new Resolver({ timeout: 3000, tries: 2 });
-dnsResolver.setServers(process.env.LOCAL_DNS_SERVERS ? process.env.LOCAL_DNS_SERVERS.split(',').map(s => s.trim()).filter(Boolean) : LOCAL_DNS);
+dnsResolver.setServers(LOCAL_DNS);
 
 // Fails open: an unreachable resolver must not block verification, so lookup errors count as "not listed".
 const isBlocklisted = async domain => {
