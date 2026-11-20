@@ -1,8 +1,8 @@
-const axios = require('../axios.js');
-const safeRequest = require('./safeRequest.js');
-const { dnsResolver, isBlocklisted } = require('./localDns.js');
-const tcpClient = require('../tcpClient.js');
-const User = require('../../database/models/user.model.js');
+import axios from '../axios.js';
+import safeRequest from './safeRequest.js';
+import { dnsResolver, isBlocklisted } from './localDns.js';
+import * as tcpClient from '../tcpClient.js';
+import User from '../../database/models/user.model.js';
 
 const DOMAIN_REGEX = /^([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
 
@@ -160,4 +160,4 @@ const verifyWebsite = async ({ domain, token, userId = null, signal }) => {
 	return qualification.ok ? verifyDomainOwnership(domain, token, signal) : qualification;
 };
 
-module.exports = { initialValidation, verifyDomainOwnership, verifyWebsite, DOMAIN_REGEX, TXT_LABELS, TXT_VALUE_PREFIX, VERIFICATION_FILE_PATH };
+export { initialValidation, verifyDomainOwnership, verifyWebsite, DOMAIN_REGEX, TXT_LABELS, TXT_VALUE_PREFIX, VERIFICATION_FILE_PATH };

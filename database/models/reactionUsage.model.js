@@ -1,4 +1,4 @@
-const { Schema, model } = require('mongoose');
+import { Schema, model } from 'mongoose';
 
 const ReactionUsageSchema = new Schema({
 	user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
@@ -10,4 +10,4 @@ const ReactionUsageSchema = new Schema({
 ReactionUsageSchema.index({ user: 1, emoji: 1 }, { unique: true });
 ReactionUsageSchema.index({ user: 1, count: -1, lastUsedAt: -1 });
 
-module.exports = model('ReactionUsage', ReactionUsageSchema);
+export default model('ReactionUsage', ReactionUsageSchema);

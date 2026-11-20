@@ -1,4 +1,4 @@
-const { Schema } = require('mongoose');
+import { Schema } from 'mongoose';
 
 const GifSchema = new Schema({
 	slug: { type: String, maxlength: 100 },
@@ -35,4 +35,5 @@ const CardSchema = new Schema({
 	linkable: Boolean,
 }, { _id: false });
 
-module.exports = { GifSchema, AttachmentSchema, CardSchema, CARD_TYPES };
+export { GifSchema, AttachmentSchema, CardSchema, CARD_TYPES };
+

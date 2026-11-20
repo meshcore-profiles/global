@@ -1,4 +1,4 @@
-const { Resolver } = require('node:dns/promises');
+import { Resolver } from 'node:dns/promises';
 
 // Own resolvers with the Sefinek-Blocklist-Collection: a blocked domain resolves to 0.0.0.0 (A) or :: (AAAA).
 const LOCAL_DNS = [
@@ -19,4 +19,4 @@ const isBlocklisted = async domain => {
 	return records4.includes('0.0.0.0') || records6.includes('::');
 };
 
-module.exports = { dnsResolver, isBlocklisted };
+export { dnsResolver, isBlocklisted };

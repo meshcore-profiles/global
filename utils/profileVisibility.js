@@ -5,4 +5,4 @@ const PROFILE_VISIBILITY = {
 	PRIVATE: 'private',
 };
 
-module.exports = PROFILE_VISIBILITY;
+export default PROFILE_VISIBILITY;

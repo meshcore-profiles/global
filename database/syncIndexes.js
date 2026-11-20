@@ -1,19 +1,20 @@
+import mongoose from 'mongoose';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
+
 process.loadEnvFile();
-require('./mongoose.js');
+await import('./mongoose.js');
 
-const mongoose = require('mongoose');
-const fs = require('node:fs/promises');
-const path = require('node:path');
-
-const modelsPath = path.join(__dirname, 'models');
+const modelsPath = path.join(import.meta.dirname, 'models');
 
 (async () => {
 	try {
 		const files = await fs.readdir(modelsPath, { recursive: true });
 
-		files
-			.filter(file => file.endsWith('.js'))
-			.forEach(file => require(path.join(modelsPath, file)));
+		for (const file of files.filter(file => file.endsWith('.js'))) {
+			await import(pathToFileURL(path.join(modelsPath, file)).href);
+		}
 
 		for (const [name, model] of Object.entries(mongoose.models)) {
 			const { toDrop, toCreate } = await model.diffIndexes();

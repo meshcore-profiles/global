@@ -1,4 +1,6 @@
-const { connect, connection } = require('mongoose');
+import mongoose from 'mongoose';
+
+const { connect, connection } = mongoose;
 
 connect(process.env.MONGODB_URL).catch(err => {
 	console.error('Failed to connect to the database', err);
@@ -16,4 +18,4 @@ connection.on('error', err => {
 	process.exit(1);
 });
 
-module.exports = connection;
+export default connection;

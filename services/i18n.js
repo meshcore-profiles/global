@@ -1,10 +1,10 @@
-const fs = require('node:fs');
-const path = require('node:path');
-const i18next = require('i18next');
-const { LanguageDetector } = require('i18next-http-middleware');
-const { AVAILABLE_LANGUAGES, DEFAULT_LANGUAGE, getLangCookie } = require('../utils/languageResolver.js');
+import fs from 'node:fs';
+import path from 'node:path';
+import i18next from 'i18next';
+import { LanguageDetector } from 'i18next-http-middleware';
+import { AVAILABLE_LANGUAGES, DEFAULT_LANGUAGE, getLangCookie } from '../utils/languageResolver.js';
 
-const LOCALES_DIR = path.join(__dirname, '..', '..', 'locales');
+const LOCALES_DIR = path.join(import.meta.dirname, '..', '..', 'locales');
 
 // Not every consuming repo translates every language in AVAILABLE_LANGUAGES (e.g. a Polish-only
 // site has no locales/en/) - only load/support the ones that actually have a locales/<lang>/ dir.
@@ -51,4 +51,5 @@ i18next
 		returnEmptyString: false,
 	});
 
-module.exports = { i18next, resources, NAMESPACES, SUPPORTED, FALLBACK_LANGUAGE };
+export { i18next, resources, NAMESPACES, SUPPORTED, FALLBACK_LANGUAGE };
+

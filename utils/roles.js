@@ -7,4 +7,4 @@ const ROLE = {
 	OWNER: 99,
 };
 
-module.exports = ROLE;
+export default ROLE;

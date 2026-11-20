@@ -1,4 +1,4 @@
-const { Schema, model } = require('mongoose');
+import { Schema, model } from 'mongoose';
 
 const GifFavoriteSchema = new Schema({
 	user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
@@ -20,4 +20,4 @@ const GifFavoriteSchema = new Schema({
 GifFavoriteSchema.index({ user: 1, 'gif.slug': 1 }, { unique: true });
 GifFavoriteSchema.index({ user: 1, createdAt: -1 });
 
-module.exports = model('GifFavorite', GifFavoriteSchema);
+export default model('GifFavorite', GifFavoriteSchema);

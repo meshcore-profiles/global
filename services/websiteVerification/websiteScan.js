@@ -13,4 +13,4 @@ const nextScan = (previous, result, at = new Date()) => (result.ok
 // A single failed scan is never enough: the previous result might be a one-off
 const shouldRevoke = scan => !scan.ok && scan.failures >= failureLimit(scan.key);
 
-module.exports = { failureLimit, nextScan, shouldRevoke };
+export { failureLimit, nextScan, shouldRevoke };

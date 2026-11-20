@@ -1,4 +1,4 @@
-const { Schema, model } = require('mongoose');
+import { Schema, model } from 'mongoose';
 
 const BlockSchema = new Schema({
 	owner: { type: Schema.Types.ObjectId, ref: 'User', required: true },
@@ -8,4 +8,4 @@ const BlockSchema = new Schema({
 BlockSchema.index({ owner: 1, target: 1 }, { unique: true });
 BlockSchema.index({ target: 1, owner: 1 });
 
-module.exports = model('Block', BlockSchema);
+export default model('Block', BlockSchema);

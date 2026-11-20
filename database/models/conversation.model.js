@@ -1,4 +1,4 @@
-const { Schema, model } = require('mongoose');
+import { Schema, model } from 'mongoose';
 
 // Per-user state of one conversation. Both participants live in the same document, so unread/muted/hidden stay independent for each of them.
 const MemberSchema = new Schema({
@@ -22,5 +22,6 @@ ConversationSchema.index({ 'members.user': 1, lastAt: -1, _id: -1 });
 // The same key for both directions, so a pair of users can never end up with two conversations
 const pairKey = (a, b) => [String(a), String(b)].sort().join(':');
 
-module.exports = model('Conversation', ConversationSchema);
-module.exports.pairKey = pairKey;
+export default model('Conversation', ConversationSchema);
+
+export { pairKey };

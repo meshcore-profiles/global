@@ -1,5 +1,5 @@
-const { Schema, model } = require('mongoose');
-const { GifSchema, AttachmentSchema, CardSchema } = require('../schemas/messageContent.js');
+import { Schema, model } from 'mongoose';
+import { GifSchema, AttachmentSchema, CardSchema } from '../schemas/messageContent.js';
 
 const MAX_MESSAGE_LENGTH = 2000;
 
@@ -42,5 +42,6 @@ MessageSchema.index({ to: 1 });
 MessageSchema.index({ 'attachments.id': 1 }, { sparse: true });
 MessageSchema.index({ from: 1, clientId: 1 }, { unique: true, partialFilterExpression: { clientId: { $type: 'string' } } });
 
-module.exports = model('Message', MessageSchema);
-module.exports.MAX_MESSAGE_LENGTH = MAX_MESSAGE_LENGTH;
+export default model('Message', MessageSchema);
+
+export { MAX_MESSAGE_LENGTH };

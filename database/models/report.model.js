@@ -1,5 +1,5 @@
-const { Schema, model } = require('mongoose');
-const { GifSchema, AttachmentSchema } = require('../schemas/messageContent.js');
+import { Schema, model } from 'mongoose';
+import { GifSchema, AttachmentSchema } from '../schemas/messageContent.js';
 
 const REASONS = ['dislike', 'spam', 'harassment', 'misinformation', 'privateInfo', 'illegal', 'other'];
 const STATUSES = ['open', 'resolved', 'dismissed'];
@@ -31,7 +31,6 @@ ReportSchema.index({ message: 1 });
 ReportSchema.index({ reported: 1, createdAt: -1 });
 ReportSchema.index({ 'snapshot.attachments.id': 1 }, { sparse: true });
 
-module.exports = model('Report', ReportSchema);
-module.exports.REASONS = REASONS;
-module.exports.STATUSES = STATUSES;
-module.exports.MAX_DETAILS_LENGTH = MAX_DETAILS_LENGTH;
+export default model('Report', ReportSchema);
+
+export { REASONS, STATUSES, MAX_DETAILS_LENGTH };

@@ -36,4 +36,5 @@ const computeStats = nodes => {
 	return { total: types.repeater, active: status.recent, nodes: nodes.length, types, status };
 };
 
-module.exports = { REDIS_KEYS, getNodeStatus, computeStats };
+export { REDIS_KEYS, getNodeStatus, computeStats };
+

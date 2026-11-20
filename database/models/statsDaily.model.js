@@ -1,4 +1,4 @@
-const { Schema, model } = require('mongoose');
+import { Schema, model } from 'mongoose';
 
 const TypeCountsSchema = new Schema({
 	client: { type: Number, default: 0 },
@@ -27,4 +27,4 @@ const StatsDailySchema = new Schema({
 
 StatsDailySchema.index({ region: 1, date: 1 }, { unique: true });
 
-module.exports = model('StatsDaily', StatsDailySchema);
+export default model('StatsDaily', StatsDailySchema);

@@ -1,4 +1,4 @@
-const { Schema, model } = require('mongoose');
+import { Schema, model } from 'mongoose';
 
 const NOTIFICATION_TYPES = ['verification'];
 const RETENTION_SECONDS = 90 * 24 * 60 * 60;
@@ -14,4 +14,4 @@ NotificationSchema.index({ user: 1, readAt: 1 });
 NotificationSchema.index({ user: 1, createdAt: -1 });
 NotificationSchema.index({ createdAt: 1 }, { expireAfterSeconds: RETENTION_SECONDS });
 
-module.exports = model('Notification', NotificationSchema);
+export default model('Notification', NotificationSchema);

@@ -1,6 +1,6 @@
-const { Schema, model } = require('mongoose');
-const ROLE = require('../../utils/roles.js');
-const PROFILE_VISIBILITY = require('../../utils/profileVisibility.js');
+import { Schema, model } from 'mongoose';
+import ROLE from '../../utils/roles.js';
+import PROFILE_VISIBILITY from '../../utils/profileVisibility.js';
 
 const AUTH_METHODS = ['local', 'google', 'discord', 'github'];
 const VERIFICATION_STATUSES = ['pending', 'approved', 'rejected'];
@@ -269,5 +269,6 @@ UserSchema.index({ 'verification.status': 1, 'profile.onboarded': 1 });
 UserSchema.index({ 'companions.verification.status': 1 });
 UserSchema.index({ 'devices.verification.status': 1 });
 
-module.exports = model('User', UserSchema);
-module.exports.MAX_ITEMS = MAX_ITEMS;
+export default model('User', UserSchema);
+
+export { MAX_ITEMS };

@@ -1,5 +1,5 @@
-const { isIP, Socket } = require('node:net');
-const crypto = require('node:crypto');
+import { isIP, Socket } from 'node:net';
+import crypto from 'node:crypto';
 
 const { TCPDATA_HOST, TCPDATA_PORT, NODE_ENV } = process.env;
 if (!TCPDATA_HOST || !TCPDATA_PORT) {
@@ -354,7 +354,7 @@ const getStats = () => sendRequest('stats:');
  */
 const isClientConnected = () => isConnected;
 
-module.exports = {
+export {
 	geoCheck,
 	checkTempEmail,
 	checkBlockedDomain,
@@ -369,5 +369,6 @@ module.exports = {
 	geoStates,
 	geoCities,
 	getStats,
-	isClientConnected,
+	isClientConnected
 };
+

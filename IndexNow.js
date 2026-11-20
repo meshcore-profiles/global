@@ -1,6 +1,6 @@
-const fs = require('node:fs');
-const axios = require('./services/axios.js');
-const pkg = require('../package.json');
+import fs from 'node:fs';
+import axios from './services/axios.js';
+import pkg from '../package.json' with { type: 'json' };
 
 const FILENAME = 'dOsyFkAdpVV3UgT9XcAyyI8mM3PISZCJVgrQQusfuHlZv7Nua3fT2nPaEsz8BQ6SWILB86pGt1CJtb4DLepm5PCglHUCK9ZrHd5';
 const DOMAIN = pkg.homepage.replace('https://', '');

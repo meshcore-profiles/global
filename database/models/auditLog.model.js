@@ -1,4 +1,4 @@
-const { Schema, model } = require('mongoose');
+import { Schema, model } from 'mongoose';
 
 const AuditLogSchema = new Schema({
 	// Missing for actions taken by the system itself, e.g. an expired ban
@@ -15,4 +15,4 @@ AuditLogSchema.index({ target: 1, createdAt: -1 });
 AuditLogSchema.index({ actor: 1, createdAt: -1 });
 AuditLogSchema.index({ action: 1, createdAt: -1 });
 
-module.exports = model('AuditLog', AuditLogSchema);
+export default model('AuditLog', AuditLogSchema);

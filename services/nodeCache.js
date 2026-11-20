@@ -1,7 +1,7 @@
-const { RESP_TYPES } = require('redis');
-const { unpack } = require('msgpackr');
-const RedisClient = require('./redis.js');
-const { REDIS_KEYS, computeStats } = require('../utils/nodeStats.js');
+import { RESP_TYPES } from 'redis';
+import { unpack } from 'msgpackr';
+import RedisClient from './redis.js';
+import { REDIS_KEYS, computeStats } from '../utils/nodeStats.js';
 
 const typedRedisClient = RedisClient.withTypeMapping({ [RESP_TYPES.BLOB_STRING]: Buffer });
 const warsawDateFormatter = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Warsaw' });
@@ -39,4 +39,5 @@ const getStats = async (region = 'pl') => {
 	return { ...computed, lastRefreshedAt: lastRefreshedAt ? lastRefreshedAt.toISOString() : null };
 };
 
-module.exports = { getCachedNodes, getLastRefreshedAt, getStats, formatWarsawDate };
+export { getCachedNodes, getLastRefreshedAt, getStats, formatWarsawDate };
+

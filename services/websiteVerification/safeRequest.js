@@ -1,7 +1,7 @@
-const dns = require('node:dns');
-const http = require('node:http');
-const https = require('node:https');
-const net = require('node:net');
+import dns from 'node:dns';
+import http from 'node:http';
+import https from 'node:https';
+import net from 'node:net';
 
 const BLOCKED = new net.BlockList();
 [
@@ -42,7 +42,7 @@ const beforeRedirect = options => {
 	if (net.isIP(host) && isBlockedAddress(host)) throw blockedError(host);
 };
 
-module.exports = {
+export default {
 	httpAgent: new http.Agent({ lookup: safeLookup }),
 	httpsAgent: new https.Agent({ lookup: safeLookup }),
 	beforeRedirect,
