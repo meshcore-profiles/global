@@ -133,7 +133,7 @@ const lookupTxt = async name => {
 const fileMatches = (path, body, token) => (path.endsWith('.txt') ? matchesToken(body, token) : hasVerificationMeta(body, token));
 
 // A body over the limit is a regular page (e.g. a custom 404), not our file: it counts as "not found", not as a failed check
-const isOversized = err => err.code === 'ERR_FR_MAX_CONTENT_LENGTH_EXCEEDED' || /maxContentLength/.test(err.message);
+const isOversized = err => err.code === 'ERR_FR_MAX_CONTENT_LENGTH_EXCEEDED' || (/maxContentLength/).test(err.message);
 
 const checkVerificationPath = async (domain, path, token, signal) => {
 	try {
