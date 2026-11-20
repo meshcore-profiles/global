@@ -42,6 +42,7 @@ const ImageSchema = new Schema({
 	path: { type: String, required: true, trim: true, match: /^\/[^\s?#]+$/ },
 	width: { type: Number, required: true, min: 1 },
 	height: { type: Number, required: true, min: 1 },
+	hash: { type: String, lowercase: true, match: /^[0-9a-f]{64}$/ },
 	nsfw: { type: NsfwSchema, default: undefined },
 	colors: { type: ColorsSchema, default: undefined },
 }, { _id: false });
