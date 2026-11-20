@@ -6,7 +6,7 @@ import { NODE, PROFILE, CONTACT } from '../../utils/fieldLimits.js';
 const AUTH_METHODS = ['local', 'google', 'discord', 'github'];
 const VERIFICATION_STATUSES = ['pending', 'approved', 'rejected'];
 const DEVICE_KINDS = ['repeater', 'roomServer'];
-const POWER_SOURCES = ['grid', 'solar', 'battery', 'poe', 'other'];
+const POWER_SOURCES = ['grid', 'solar', 'poe', 'other'];
 const PASSKEY_TRANSPORTS = ['usb', 'nfc', 'ble', 'internal', 'hybrid', 'smart-card'];
 const PUBLIC_KEY_REGEX = new RegExp(`^[0-9a-f]{${NODE.publicKeyLength}}$`);
 const MAX_NODE_PHOTOS = 5;
