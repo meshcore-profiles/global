@@ -1,13 +1,14 @@
 import { Schema, model } from 'mongoose';
 import ROLE from '../../utils/roles.js';
 import PROFILE_VISIBILITY from '../../utils/profileVisibility.js';
+import { NODE, PROFILE, CONTACT } from '../../utils/fieldLimits.js';
 
 const AUTH_METHODS = ['local', 'google', 'discord', 'github'];
 const VERIFICATION_STATUSES = ['pending', 'approved', 'rejected'];
 const DEVICE_KINDS = ['repeater', 'roomServer'];
 const POWER_SOURCES = ['grid', 'solar', 'battery', 'poe', 'other'];
 const PASSKEY_TRANSPORTS = ['usb', 'nfc', 'ble', 'internal', 'hybrid', 'smart-card'];
-const PUBLIC_KEY_REGEX = /^[0-9a-f]{64}$/;
+const PUBLIC_KEY_REGEX = new RegExp(`^[0-9a-f]{${NODE.publicKeyLength}}$`);
 const MAX_NODE_PHOTOS = 5;
 const MAX_BIO_IMAGES = 5;
 
@@ -53,20 +54,20 @@ const verificationFields = () => ({
 });
 
 const nodeFields = {
-	name: { type: String, trim: true, maxlength: 60, required: true },
+	name: { type: String, trim: true, maxlength: NODE.name.maxBytes, required: true },
 	publicKey: { type: String, required: true, trim: true, lowercase: true, match: PUBLIC_KEY_REGEX },
-	model: { type: String, trim: true, maxlength: 60 },
-	pathHash: { type: Number, enum: [1, 2, 3] },
+	model: { type: String, trim: true, maxlength: NODE.modelMax },
+	pathHash: { type: Number, enum: NODE.pathHashSizes },
 	radio: {
-		preset: { type: String, trim: true, maxlength: 30 },
-		freq: { type: Number, min: 137, max: 2500 },
-		bw: { type: Number, min: 7.8, max: 1625 },
-		sf: { type: Number, min: 5, max: 12, validate: integer },
-		cr: { type: Number, min: 5, max: 8, validate: integer },
+		preset: { type: String, trim: true, maxlength: NODE.presetMax },
+		freq: { type: Number, min: NODE.radio.freq.min, max: NODE.radio.freq.max },
+		bw: { type: Number, min: NODE.radio.bw.min, max: NODE.radio.bw.max },
+		sf: { type: Number, min: NODE.radio.sf.min, max: NODE.radio.sf.max, validate: integer },
+		cr: { type: Number, min: NODE.radio.cr.min, max: NODE.radio.cr.max, validate: integer },
 	},
 	antenna: {
-		name: { type: String, trim: true, maxlength: 60 },
-		gain: { type: Number, min: -10, max: 30 },
+		name: { type: String, trim: true, maxlength: NODE.antenna.nameMax },
+		gain: { type: Number, min: NODE.antenna.gain.min, max: NODE.antenna.gain.max },
 	},
 	photos: { type: [ImageSchema], default: [], validate: maxPhotos(MAX_NODE_PHOTOS) },
 	coverPosition: {
@@ -80,7 +81,7 @@ const nodeFields = {
 const CompanionSchema = new Schema({
 	...nodeFields,
 	main: { type: Boolean, default: false },
-	note: { type: String, trim: true, maxlength: 500 },
+	note: { type: String, trim: true, maxlength: NODE.noteMax },
 }, { timestamps: true });
 
 const DeviceSchema = new Schema({
@@ -90,23 +91,23 @@ const DeviceSchema = new Schema({
 		lat: { type: Number, min: -90, max: 90 },
 		lon: { type: Number, min: -180, max: 180 },
 	},
-	note: { type: String, trim: true, maxlength: 500 },
-	power: { type: String, trim: true, maxlength: 60 },
-	txPower: { type: Number, min: -9, max: 30 },
+	note: { type: String, trim: true, maxlength: NODE.noteMax },
+	power: { type: String, trim: true, maxlength: NODE.powerMax },
+	txPower: { type: Number, min: NODE.txPower.min, max: NODE.txPower.max },
 	powerSource: { type: String, enum: POWER_SOURCES },
-	solarPanel: { type: Number, min: 0.1, max: 500 },
-	battery: { type: Number, min: 1, max: 200000 },
+	solarPanel: { type: Number, min: NODE.solarPanel.min, max: NODE.solarPanel.max },
+	battery: { type: Number, min: NODE.battery.min, max: NODE.battery.max },
 	antenna: {
-		name: { type: String, trim: true, maxlength: 60 },
+		name: { type: String, trim: true, maxlength: NODE.antenna.nameMax },
 		type: { type: String, enum: ['omni', 'dir'] },
-		heading: { type: Number, min: 0, max: 360 },
-		gain: { type: Number, min: -10, max: 30 },
-		height: { type: Number, min: 0, max: 600 },
+		heading: { type: Number, min: NODE.antenna.heading.min, max: NODE.antenna.heading.max },
+		gain: { type: Number, min: NODE.antenna.gain.min, max: NODE.antenna.gain.max },
+		height: { type: Number, min: 0, max: NODE.antenna.heightMetersMax },
 	},
 }, { timestamps: true });
 
 const ContactEmailSchema = new Schema({
-	address: { type: String, trim: true, maxlength: 320, required: true, lowercase: true },
+	address: { type: String, trim: true, maxlength: CONTACT.emailMax, required: true, lowercase: true },
 	verified: { type: Boolean, default: false },
 	primary: { type: Boolean, default: false },
 	public: { type: Boolean, default: false },
@@ -128,7 +129,7 @@ const WebsiteRevocationSchema = new Schema({
 }, { _id: false });
 
 const WebsiteSchema = new Schema({
-	domain: { type: String, trim: true, maxlength: 253, required: true, lowercase: true },
+	domain: { type: String, trim: true, maxlength: CONTACT.domainMax, required: true, lowercase: true },
 	verified: { type: Boolean, default: false },
 	public: { type: Boolean, default: false },
 	method: { type: String, enum: ['dns', 'file'] },
@@ -158,7 +159,7 @@ const UserSchema = new Schema({
 		trim: true,
 		match: [/^\S+@\S+\.\S+$/, 'Invalid email'],
 	},
-	slug: { type: String, trim: true, lowercase: true, minlength: 3, maxlength: 30 },
+	slug: { type: String, trim: true, lowercase: true, minlength: PROFILE.slug.min, maxlength: PROFILE.slug.max },
 	language: { type: String, default: 'pl', trim: true, lowercase: true, match: /^[a-z]{2}$/ },
 	roles: { type: [{ type: Number, enum: Object.values(ROLE) }], default: [ROLE.USER], required: true },
 	banned: { type: Boolean, default: false },
@@ -207,7 +208,7 @@ const UserSchema = new Schema({
 			y: { type: Number, min: 0, max: 100, default: 50 },
 		},
 		bio: {
-			value: { type: String, trim: true, maxlength: 4000 },
+			value: { type: String, trim: true, maxlength: PROFILE.bioMax },
 			public: { type: Boolean, default: false },
 		},
 		bioImages: { type: [ImageSchema], default: [], validate: maxPhotos(MAX_BIO_IMAGES) },
@@ -220,13 +221,13 @@ const UserSchema = new Schema({
 			syncedAt: Date,
 		},
 		networkSince: { type: Date },
-		region: { type: String, trim: true, maxlength: 120 },
+		region: { type: String, trim: true, maxlength: PROFILE.placeMax },
 		location: {
 			countryIso2: { type: String, trim: true, maxlength: 2 },
-			countryName: { type: String, trim: true, maxlength: 120 },
-			stateId: { type: String, trim: true, maxlength: 20 },
-			stateName: { type: String, trim: true, maxlength: 120 },
-			city: { type: String, trim: true, maxlength: 120 },
+			countryName: { type: String, trim: true, maxlength: PROFILE.placeMax },
+			stateId: { type: String, trim: true, maxlength: PROFILE.stateIdMax },
+			stateName: { type: String, trim: true, maxlength: PROFILE.placeMax },
+			city: { type: String, trim: true, maxlength: PROFILE.placeMax },
 		},
 	},
 	settings: {
