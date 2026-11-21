@@ -14,10 +14,12 @@ const ConversationSchema = new Schema({
 	members: { type: [MemberSchema], validate: { validator: members => members.length === 2 && String(members[0].user) !== String(members[1].user), message: 'A conversation has exactly two different members' } },
 	last: { type: Schema.Types.ObjectId, ref: 'Message' },
 	lastAt: Date,
+	ticket: { type: Schema.Types.ObjectId, ref: 'Ticket' },
 }, { versionKey: false, timestamps: { createdAt: true, updatedAt: false } });
 
 ConversationSchema.index({ key: 1 }, { unique: true });
 ConversationSchema.index({ 'members.user': 1, lastAt: -1, _id: -1 });
+ConversationSchema.index({ ticket: 1 }, { unique: true, sparse: true });
 
 // The same key for both directions, so a pair of users can never end up with two conversations
 const pairKey = (a, b) => [String(a), String(b)].sort().join(':');
