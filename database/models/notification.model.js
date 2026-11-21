@@ -1,6 +1,6 @@
 import { Schema, model } from 'mongoose';
 
-const NOTIFICATION_TYPES = ['verification'];
+const NOTIFICATION_TYPES = ['verification', 'moderation'];
 const RETENTION_SECONDS = 90 * 24 * 60 * 60;
 
 const NotificationSchema = new Schema({

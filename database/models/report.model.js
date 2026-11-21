@@ -23,6 +23,7 @@ const ReportSchema = new Schema({
 	status: { type: String, enum: STATUSES, default: 'open' },
 	reviewedBy: { type: Schema.Types.ObjectId, ref: 'User' },
 	reviewedAt: Date,
+	resolution: { type: String, maxlength: MAX_DETAILS_LENGTH },
 }, { versionKey: false, timestamps: { createdAt: true, updatedAt: false } });
 
 ReportSchema.index({ reporter: 1, message: 1 }, { unique: true });
