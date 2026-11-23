@@ -2,9 +2,18 @@ import fs from 'node:fs';
 import axios from './services/axios.js';
 import pkg from '../package.json' with { type: 'json' };
 
-const FILENAME = 'dOsyFkAdpVV3UgT9XcAyyI8mM3PISZCJVgrQQusfuHlZv7Nua3fT2nPaEsz8BQ6SWILB86pGt1CJtb4DLepm5PCglHUCK9ZrHd5';
 const DOMAIN = pkg.homepage.replace('https://', '');
 const BATCH_SIZE = 10000;
+
+// Every site has its own key: the one public/<key>.txt file whose content equals its name (IndexNow requirement)
+const findKey = () => {
+	const keys = fs.readdirSync('public')
+		.filter(file => (/^[a-zA-Z0-9-]{8,128}\.txt$/).test(file))
+		.map(file => file.slice(0, -4))
+		.filter(key => fs.readFileSync(`public/${key}.txt`, 'utf8').trim() === key);
+	if (keys.length !== 1) throw new Error(`Expected exactly one IndexNow key file in public/, found ${keys.length}`);
+	return keys[0];
+};
 
 const parseSitemap = async () => {
 	const { data: xml } = await axios.get(`https://${DOMAIN}/sitemap.xml`);
@@ -16,7 +25,7 @@ const submitToIndexNow = async (key, urls, batchNum, totalBatches) => {
 		const payload = {
 			host: DOMAIN,
 			key,
-			keyLocation: `https://${DOMAIN}/${FILENAME}.txt`,
+			keyLocation: `https://${DOMAIN}/${key}.txt`,
 			urlList: urls,
 		};
 
@@ -35,7 +44,7 @@ const submitToIndexNow = async (key, urls, batchNum, totalBatches) => {
 (async () => {
 	console.log('Domain:', DOMAIN);
 
-	const key = fs.readFileSync(`public/${FILENAME}.txt`, 'utf8').trim();
+	const key = findKey();
 	const urls = await parseSitemap();
 	console.log(`Parsed URLs: ${urls.length}`);
 
