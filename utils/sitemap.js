@@ -72,7 +72,7 @@ const createSitemap = (getEntries, { ttl = DEFAULT_TTL } = {}) => {
 	const cache = new Map();
 
 	const refresh = (domain, req, state) => {
-		state.pending ??= Promise.resolve(getEntries(domain, req))
+		state.pending ??= Promise.try(getEntries, domain, req)
 			.then(entries => {
 				Object.assign(state, build(domain, entries), { at: Date.now() });
 			})

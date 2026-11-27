@@ -11,6 +11,13 @@ Shared scripts used across every MeshCore backend project - added as a git submo
 - [`middlewares/morgan.js`](middlewares/morgan.js) - shared request logger (requires `morgan` from the consuming repo's own dependencies).
 - [`database/mongoose.js`](database/mongoose.js) - single Mongoose connection, connected on import.
 - [`database/syncIndexes.js`](database/syncIndexes.js) - standalone script that syncs Mongoose indexes for every model in the consuming repo's own `database/models` against the actual state in MongoDB.
+- [`middlewares/timeout.js`](middlewares/timeout.js) - factory `({ ms, onTimeout })` for a request timeout (time until the response headers are sent). Exposes `req.signal`, aborted on timeout or client disconnect.
+- [`middlewares/rateLimit.js`](middlewares/rateLimit.js) - factory over `express-rate-limit` with a Redis store (`prefix` is required; `redis: false` keeps the counters in memory). Requires `express-rate-limit` and `rate-limit-redis` from the consuming repo.
+- [`middlewares/noindex.js`](middlewares/noindex.js) - sets `X-Robots-Tag: noindex`, mounted on `/api`.
+- [`utils/seo.js`](utils/seo.js) - `createSeo` (meta data and JSON-LD) and `ORGANIZATIONS`, the only place for organization data.
+- [`views/seo-head.ejs`](views/seo-head.ejs) - the `<head>` tags rendered from the `createSeo` result.
+- [`utils/sitemap.js`](utils/sitemap.js) - `createSitemap` route handler (cached with a TTL in production) and `escapeXml`.
+- [`utils/robots.js`](utils/robots.js) - `createRobots({ allow, disallow })` handler for `/robots.txt`.
 
 ## Used by
 

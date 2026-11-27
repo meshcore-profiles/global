@@ -10,8 +10,14 @@ export default ({ ms = 15 * 1000, onTimeout }) => (req, res, next) => {
 		if (res.headersSent) return;
 
 		controller.abort(new Error('Request timed out'));
-		// A handler that finishes after the 503 would otherwise write to a closed response
-		res.once('finish', () => LATE_METHODS.forEach(method => { res[method] = () => res; }));
+		// A handler that finishes after the 503 would otherwise write to a closed response. The methods are disabled as soon as
+		// the 503 calls `end`: `res.render` sends it asynchronously, and waiting for `finish` would leave a gap for late writes.
+		const { end } = res;
+		res.end = (...args) => {
+			const result = end.apply(res, args);
+			LATE_METHODS.forEach(method => { res[method] = () => res; });
+			return result;
+		};
 		onTimeout(res);
 	}, ms);
 
