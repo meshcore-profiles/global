@@ -14,4 +14,4 @@ const createRobots = options => (req, res) => {
 	res.type('text/plain').send(buildRobots(res.locals.domain ?? req.app.locals.domain, options));
 };
 
-export { createRobots, buildRobots };
+export { createRobots };

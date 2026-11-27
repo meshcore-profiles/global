@@ -182,4 +182,4 @@ const createSeo = ({
 	};
 };
 
-export { createSeo, ORGANIZATIONS, serializeJsonLd };
+export { createSeo, ORGANIZATIONS };

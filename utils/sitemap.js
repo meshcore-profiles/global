@@ -62,8 +62,6 @@ const build = (domain, entries) => {
 	return { xml: `<?xml version="1.0" encoding="UTF-8"?>\n<urlset ${ns}>\n${urls.join('\n')}\n</urlset>\n`, lastmod: newest };
 };
 
-const render = (domain, entries) => build(domain, entries).xml;
-
 // getEntries(domain, req) may be sync or async. The domain is res.locals.domain (multi-site apps) or app.locals.domain. In production the result is
 // cached per domain: the first request waits for the build, later ones get the cached copy instantly and an expired copy is served stale while a
 // single background rebuild runs. Express adds ETag and answers 304 on If-None-Match / If-Modified-Since (Last-Modified = newest lastmod),
@@ -107,4 +105,4 @@ const createSitemap = (getEntries, { ttl = DEFAULT_TTL } = {}) => {
 	};
 };
 
-export { createSitemap, render, build, escapeXml };
+export { createSitemap, escapeXml };
