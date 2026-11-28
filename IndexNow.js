@@ -2,7 +2,9 @@ import fs from 'node:fs';
 import axios from './services/axios.js';
 import pkg from '../package.json' with { type: 'json' };
 
-const DOMAIN = pkg.homepage.replace('https://', '');
+// A site served under several domains passes them as arguments, otherwise the one from `homepage` is submitted
+const args = process.argv.slice(2);
+const DOMAINS = args.length ? args : [new URL(pkg.homepage).host];
 const BATCH_SIZE = 10000;
 
 // Every site has its own key: the one public/<key>.txt file whose content equals its name (IndexNow requirement)
@@ -15,17 +17,17 @@ const findKey = () => {
 	return keys[0];
 };
 
-const parseSitemap = async () => {
-	const { data: xml } = await axios.get(`https://${DOMAIN}/sitemap.xml`);
+const parseSitemap = async domain => {
+	const { data: xml } = await axios.get(`https://${domain}/sitemap.xml`);
 	return [...xml.matchAll(/<loc>(.*?)<\/loc>/g)].map(m => m[1].trim());
 };
 
-const submitToIndexNow = async (key, urls, batchNum, totalBatches) => {
+const submitToIndexNow = async (domain, key, urls, batchNum, totalBatches) => {
 	try {
 		const payload = {
-			host: DOMAIN,
+			host: domain,
 			key,
-			keyLocation: `https://${DOMAIN}/${key}.txt`,
+			keyLocation: `https://${domain}/${key}.txt`,
 			urlList: urls,
 		};
 
@@ -41,11 +43,10 @@ const submitToIndexNow = async (key, urls, batchNum, totalBatches) => {
 	}
 };
 
-(async () => {
-	console.log('Domain:', DOMAIN);
+const submitDomain = async (domain, key) => {
+	console.log('Domain:', domain);
 
-	const key = findKey();
-	const urls = await parseSitemap();
+	const urls = await parseSitemap(domain);
 	console.log(`Parsed URLs: ${urls.length}`);
 
 	const totalBatches = Math.ceil(urls.length / BATCH_SIZE);
@@ -54,8 +55,13 @@ const submitToIndexNow = async (key, urls, batchNum, totalBatches) => {
 		const chunk = urls.slice(i, i + BATCH_SIZE);
 		const batchNum = Math.floor(i / BATCH_SIZE) + 1;
 		console.log(`Submitting batch ${batchNum}/${totalBatches} (${chunk.length} URLs, range ${i + 1}-${i + chunk.length})`);
-		await submitToIndexNow(key, chunk, batchNum, totalBatches);
+		await submitToIndexNow(domain, key, chunk, batchNum, totalBatches);
 	}
+};
+
+(async () => {
+	const key = findKey();
+	for (const domain of DOMAINS) await submitDomain(domain, key);
 
 	console.log('All batches processed.');
 	process.exit(0);
